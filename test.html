@@ -1,466 +1,425 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>반짝반짝 리얼 네일아트 놀이</title>
-    <style>
-        * { box-sizing: border-box; }
-
-        body { 
-            text-align: center; 
-            font-family: 'Malgun Gothic', sans-serif; 
-            background: linear-gradient(135deg, #ffeaa7, #ffc0cb); 
-            margin: 0; 
-            padding: 8px; 
-            touch-action: none; 
-            user-select: none;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h2 { margin: 5px 0 10px 0; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.15); font-size: 24px; }
-
-        .game-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            max-width: 1000px;
-            width: 100%;
-        }
-
-        .left-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-
-        .right-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 16px;
-            border-radius: 25px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            width: 280px;
-            flex-shrink: 0;
-        }
-        .menu-column {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-        }
-        .column-title { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 2px; text-align: left; }
-
-        /* 👑 좌우로 부드럽게 스크롤되는 스티커 슬라이더 바 */
-        .sticker-slider-container {
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-        }
-        .sticker-slider {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            padding: 5px 2px;
-            touch-action: pan-x; /* 슬라이더 영역 내에서 좌우 스와이프 허용 */
-        }
-        /* 스크롤바 디자인 (부드럽고 투명하게 무드 유지) */
-        .sticker-slider::-webkit-scrollbar { height: 5px; }
-        .sticker-slider::-webkit-scrollbar-thumb { background: rgba(232, 67, 147, 0.3); border-radius: 10px; }
-
-        .color-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        /* 버튼 스타일 기본 정의 */
-        .btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            border: 3px solid white;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            font-size: 26px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s ease;
-            flex-shrink: 0;
-        }
-        .btn.active {
-            border-color: #e84393;
-            transform: scale(1.08);
-            background-color: #fff0f6;
-        }
-
-        .sticker-item { 
-            scroll-snap-align: start;
-            cursor: grab;
-        }
-        .sticker-item:active { cursor: grabbing; }
-
-        .drag-ghost {
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            user-select: none;
-        }
-
-        .slider-box {
-            background: white;
-            padding: 8px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-        .slider-box span { font-size: 11px; font-weight: bold; color: #555; }
-        .size-slider { width: 15px; height: 90px; writing-mode: vertical-lr; direction: rtl; accent-color: #e84393; cursor: pointer; }
-
-        /* 중앙 도화지 판 */
-        .artboard {
-            position: relative;
-            width: 450px;
-            height: 550px;
-            border-radius: 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            overflow: hidden;
-            flex-shrink: 0; 
-        }
-        
-        /* 👑 획기적 변경: 버그 차단용 독립식 하단 배경 레이어 */
-        #nailBackground {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #ffffff, #f7d6e0);
-            transition: background 0.25s ease;
-        }
-        
-        /* 그림을 그리는 캔버스는 투명하게 고정 */
-        #paintCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-        }
-        
-        .finger-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* ========================================================
-           📱 핸드폰 세로화면(Portrait) 완벽 레이아웃 대응 변환
-           ======================================================== */
-        @media (max-width: 768px) {
-            body { justify-content: flex-start; padding: 4px; }
-            h2 { font-size: 18px; margin: 2px 0 6px 0; }
-
-            .game-container { 
-                flex-direction: column; 
-                gap: 8px; 
-                width: 100%;
-                max-width: 360px;
-            }
-
-            /* [상단 메뉴] 콤팩트 가로 정렬 */
-            .left-menu { 
-                flex-direction: row; 
-                width: 100%; 
-                justify-content: space-between; 
-                align-items: center;
-                gap: 4px;
-            }
-            .left-menu .btn { width: 44px; height: 44px; font-size: 18px; }
-            
-            .slider-box { flex-direction: row; height: 44px; padding: 0 10px; border-radius: 22px; gap: 4px; }
-            .size-slider { writing-mode: horizontal-tb; width: 70px; height: 10px; direction: ltr; }
-
-            /* [중앙 도화지] 화면 가로폭에 맞춰 자동 가변 스케일링 */
-            .artboard {
-                width: 100%;
-                height: auto;
-                aspect-ratio: 450 / 550;
-                border-radius: 22px;
-            }
-
-            /* [하단 메뉴] 가로 슬라이더 형태로 가볍게 가변 배치 */
-            .right-menu { 
-                flex-direction: column; 
-                width: 100%; 
-                padding: 10px;
-                border-radius: 20px;
-                gap: 8px;
-            }
-            
-            .right-menu .btn { width: 46px; height: 46px; font-size: 20px; border-width: 2px; }
-            .right-menu .menu-column:first-child .btn { font-size: 12px; }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>CODE_128 바코드 스캔 테스트</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f8;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #657187;
+      --line: #dce2ea;
+      --primary: #1769e0;
+      --primary-dark: #1055b8;
+      --success: #157347;
+      --success-bg: #e8f6ee;
+      --warning: #8a5400;
+      --warning-bg: #fff3d8;
+      --danger: #b42318;
+      --danger-bg: #ffebe9;
+      --shadow: 0 8px 28px rgba(25, 39, 64, .07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    button, select { font: inherit; }
+    .page { width: min(900px, 100%); margin: 0 auto; padding: 20px 14px 40px; }
+    header { margin: 4px 0 18px; }
+    .eyebrow { margin: 0 0 5px; font-size: 12px; font-weight: 800; letter-spacing: .09em; color: var(--primary); }
+    h1 { margin: 0; font-size: clamp(24px, 5vw, 34px); line-height: 1.2; }
+    .subtitle { color: var(--muted); margin: 8px 0 0; font-size: 14px; }
+    .layout { display: grid; gap: 14px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 16px; min-width: 0; }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    h2 { font-size: 17px; margin: 0; }
+    .tag { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 750; background: #edf1f6; color: #536176; white-space: nowrap; }
+    .tag.good { background: var(--success-bg); color: var(--success); }
+    .tag.warn { background: var(--warning-bg); color: var(--warning); }
+    #reader {
+      width: 100%;
+      min-height: 260px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #101722;
+      border: 1px solid #252f3d;
+    }
+    #reader:empty::before {
+      content: "카메라 시작을 누르면\A 여기에 영상이 표시됩니다";
+      white-space: pre-wrap;
+      min-height: 260px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #d2dae5;
+      font-size: 15px;
+    }
+    #reader video { max-width: 100%; }
+    #reader__dashboard_section_csr button,
+    #reader__dashboard_section_swaplink { display: none !important; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+    button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 14px;
+      color: var(--text);
+      background: #fff;
+      font-weight: 750;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button.primary { background: var(--primary); border-color: var(--primary); color: white; }
+    button.primary:not(:disabled):active { background: var(--primary-dark); }
+    button.danger { color: var(--danger); border-color: #f2c4c0; }
+    .status { margin: 12px 0 0; padding: 11px 12px; border-radius: 10px; background: #edf2f8; color: #344258; font-size: 13px; overflow-wrap: anywhere; }
+    .status.success { background: var(--success-bg); color: var(--success); }
+    .status.warning { background: var(--warning-bg); color: var(--warning); }
+    .status.error { background: var(--danger-bg); color: var(--danger); }
+    .result-card { margin-top: 14px; border: 1px solid #b8d2fb; border-radius: 14px; padding: 14px; background: #f5f9ff; }
+    .result-label { color: var(--muted); font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+    .result-value { font-size: clamp(22px, 5vw, 30px); font-weight: 850; letter-spacing: .02em; overflow-wrap: anywhere; word-break: break-word; }
+    .result-meta { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .help { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+    .stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat { border: 1px solid var(--line); padding: 7px 10px; border-radius: 10px; background: #fbfcfe; font-size: 13px; color: var(--muted); }
+    .stat strong { color: var(--text); font-size: 15px; margin-left: 4px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+    td.code { font-weight: 750; overflow-wrap: anywhere; word-break: break-word; min-width: 125px; }
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 22px 8px; }
+    .footnote { margin: 14px 3px 0; color: var(--muted); font-size: 12px; }
+    @media (min-width: 760px) {
+      .page { padding: 28px 20px 50px; }
+      .panel { padding: 20px; }
+      #reader, #reader:empty::before { min-height: 340px; }
+    }
+  </style>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
+  <main class="page">
+    <header>
+      <p class="eyebrow">ASSET MANAGER · CAMERA CHECK</p>
+      <h1>바코드 스캔 테스트</h1>
+      <p class="subtitle">기존 안드로이드 앱과 비교하기 위한 테스트 페이지입니다. CODE_128만 인식합니다.</p>
+    </header>
 
-    <h2>💅 반짝반짝 모바일 네일 숍</h2>
-
-    <div class="game-container">
-        <!-- 상단 기능 툴바 -->
-        <div class="left-menu">
-            <button class="btn" style="background-color: #ff7675; color: white; font-size: 16px;" onclick="undo()">↩️</button>
-            <button class="btn" style="background-color: #ffeaa7;" onclick="clearAll()">🗑️</button>
-            <button id="tool-pen" class="btn active" onclick="setMode('pen')">✏️</button>
-            <button id="tool-eraser" class="btn" onclick="setMode('eraser')">🧼</button>
-            
-            <div class="slider-box">
-                <span>크기</span>
-                <input type="range" id="penSize" class="size-slider" min="15" max="60" value="30" oninput="updateSize(this.value)">
-            </div>
+    <div class="layout">
+      <section class="panel" aria-labelledby="camera-title">
+        <div class="panel-heading">
+          <h2 id="camera-title">1. 카메라 스캔</h2>
+          <span class="tag" id="cameraBadge">카메라 준비 전</span>
         </div>
 
-        <!-- 중앙 손톱 캔버스 아틀리에 -->
-        <div class="artboard">
-            <!-- 무조건 바뀌는 진짜 배경판 -->
-            <div id="nailBackground"></div>
-            <!-- 그림판 -->
-            <canvas id="paintCanvas" width="450" height="550"></canvas>
-            
-            <svg class="finger-overlay" viewBox="0 0 450 550">
-                <defs>
-                    <mask id="nail-hole">
-                        <rect width="450" height="550" fill="white" />
-                        <path d="M 155 130 C 155 85, 295 85, 295 130 L 280 380 C 280 405, 170 405, 170 380 Z" fill="black" />
-                    </mask>
-                </defs>
-                <g mask="url(#nail-hole)">
-                    <rect width="450" height="550" fill="#f3edf5" />
-                    <path d="M 75 550 L 110 110 C 110 25, 340 25, 340 110 L 375 550 Z" fill="#fbc5b1" stroke="#e09985" stroke-width="2"/>
-                </g>
-                <path d="M 170 380 C 170 405, 280 405, 280 380" fill="none" stroke="#d18671" stroke-width="3" stroke-linecap="round" />
-                <path d="M 115 475 C 165 485, 285 485, 335 475" fill="none" stroke="#e09985" stroke-width="2" stroke-linecap="round" />
-                <path d="M 120 487 C 170 497, 280 497, 330 487" fill="none" stroke="#e09985" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-        </div>
+        <div id="reader" aria-label="바코드 카메라 화면"></div>
 
-        <!-- 하단 꾸미기 바 -->
-        <div class="right-menu">
-            <div class="menu-column">
-                <span class="column-title">바탕 매니큐어 색상</span>
-                <div class="color-row">
-                    <button class="btn" style="background: #e84393;" onclick="fillPattern('color', '#e84393')"></button>
-                    <button class="btn" style="background: #9b59b6;" onclick="fillPattern('color', '#9b59b6')"></button>
-                    <button class="btn" style="background: linear-gradient(to bottom, #ff7675, #ffeaa7, #74b9ff);" onclick="fillPattern('rainbow')">🌈</button>
-                    <button class="btn" style="background: radial-gradient(#fff 20%, #fd79a8 21%) 0 0 / 14px 14px;" onclick="fillPattern('dots')">🔮</button>
-                    <button class="btn" style="background: #fff; font-weight:bold;" onclick="fillPattern('clear')">지움</button>
-                </div>
-            </div>
-            
-            <div class="menu-column">
-                <span class="column-title">데코 스티커 (옆으로 밀어보세요 👉)</span>
-                <div class="sticker-slider-container">
-                    <!-- 👑 좌우 스와이프가 지원되는 슬라이더 목록 -->
-                    <div class="sticker-slider">
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '💖')">💖</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '⭐')">⭐</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🎀')">🎀</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '💎')">💎</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '👑')">👑</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🦄')">🦄</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🍒')">🍒</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🐰')">🐰</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🐼')">🐼</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🐱')">🐱</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🦁')">🦁</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🐸')">🐸</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🧁')">🧁</div>
-                        <div class="btn sticker-item" onpointerdown="startDrag(event, '🌼')">🌼</div>
-                    </div>
-                </div>
-            </div>
+        <div class="button-row">
+          <button id="startBtn" class="primary" type="button">카메라 시작</button>
+          <button id="nextBtn" type="button" disabled>다음 바코드 인식</button>
+          <button id="torchBtn" type="button" disabled>플래시 켜기</button>
+          <button id="stopBtn" type="button" disabled>카메라 중지</button>
         </div>
+        <p id="status" class="status" role="status" aria-live="polite">카메라 시작을 누르세요. 카메라 권한을 허용해야 합니다.</p>
+
+        <div class="result-card" aria-live="polite">
+          <div class="result-label">마지막 인식 결과 · CODE_128</div>
+          <div id="lastResult" class="result-value">아직 인식된 바코드가 없습니다</div>
+          <div id="lastResultMeta" class="result-meta">바코드를 카메라 화면의 가로 안내 영역에 맞춰 비춰 보세요.</div>
+          <div class="button-row">
+            <button id="copyBtn" type="button" disabled>결과 복사</button>
+          </div>
+        </div>
+        <p class="help">인식 후 중복 기록을 막기 위해 한 번 잠깁니다. 바코드를 바꿔 비춘 다음 <strong>다음 바코드 인식</strong>을 누르세요. 플래시는 기기·브라우저가 지원할 때만 작동합니다.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="history-title">
+        <div class="panel-heading">
+          <h2 id="history-title">2. 인식 기록</h2>
+          <span class="tag" id="countBadge">0건</span>
+        </div>
+        <div class="stats">
+          <div class="stat">성공 횟수 <strong id="successCount">0</strong></div>
+          <div class="stat">현재 형식 <strong>CODE_128</strong></div>
+        </div>
+        <div class="button-row" style="margin-bottom: 10px;">
+          <button id="downloadBtn" type="button" disabled>CSV 다운로드</button>
+          <button id="clearBtn" class="danger" type="button" disabled>기록 지우기</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>번호</th><th>인식 시간</th><th>바코드 값</th></tr></thead>
+            <tbody id="historyBody"><tr><td colspan="3" class="empty">아직 기록이 없습니다.</td></tr></tbody>
+          </table>
+        </div>
+        <p class="footnote">기록은 이 페이지가 열려 있는 동안 브라우저 메모리에만 보관됩니다. 서버로 전송하거나 영구 저장하지 않습니다.</p>
+      </section>
     </div>
 
-    <script>
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        const sizeInput = document.getElementById('penSize');
-        const nailBg = document.getElementById('nailBackground');
-        
-        let isDrawing = false;
-        let currentMode = 'pen'; 
-        let currentColor = '#e84393';
-        
-        let undoStack = [];
-        const maxUndo = 15;
+    <p class="footnote">카메라 사용은 HTTPS 페이지 또는 localhost에서 가능합니다. GitHub Pages로 배포한 주소를 휴대전화에서 열어 테스트하세요. 이 페이지는 외부 CDN에서 스캔 라이브러리를 불러오므로 테스트 시 인터넷 연결이 필요합니다.</p>
+  </main>
 
-        let dragGhost = null;
-        let draggedSticker = '';
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const startBtn = $('startBtn');
+      const nextBtn = $('nextBtn');
+      const torchBtn = $('torchBtn');
+      const stopBtn = $('stopBtn');
+      const copyBtn = $('copyBtn');
+      const downloadBtn = $('downloadBtn');
+      const clearBtn = $('clearBtn');
+      const statusEl = $('status');
+      const cameraBadge = $('cameraBadge');
+      const lastResultEl = $('lastResult');
+      const lastResultMeta = $('lastResultMeta');
+      const historyBody = $('historyBody');
+      const countBadge = $('countBadge');
+      const successCount = $('successCount');
 
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = sizeInput.value;
-        ctx.strokeStyle = currentColor;
+      let scanner = null;
+      let isRunning = false;
+      let scanArmed = true;
+      let torchOn = false;
+      let lastCode = '';
+      let records = [];
 
-        function getCanvasCoords(clientX, clientY) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (clientX - rect.left) * (canvas.width / rect.width),
-                y: (clientY - rect.top) * (canvas.height / rect.height)
-            };
+      function setStatus(message, type = '') {
+        statusEl.textContent = message;
+        statusEl.className = `status${type ? ` ${type}` : ''}`;
+      }
+
+      function setCameraState(running) {
+        isRunning = running;
+        startBtn.disabled = running;
+        stopBtn.disabled = !running;
+        torchBtn.disabled = !running;
+        nextBtn.disabled = !running || scanArmed;
+        cameraBadge.textContent = running ? '카메라 실행 중' : '카메라 중지됨';
+        cameraBadge.className = `tag${running ? ' good' : ''}`;
+        if (!running) {
+          torchOn = false;
+          torchBtn.textContent = '플래시 켜기';
+        }
+      }
+
+      function formatTime(date = new Date()) {
+        return date.toLocaleString('ko-KR', { hour12: false });
+      }
+
+      function renderHistory() {
+        countBadge.textContent = `${records.length}건`;
+        successCount.textContent = String(records.length);
+        downloadBtn.disabled = records.length === 0;
+        clearBtn.disabled = records.length === 0;
+
+        if (records.length === 0) {
+          historyBody.innerHTML = '<tr><td colspan="3" class="empty">아직 기록이 없습니다.</td></tr>';
+          return;
         }
 
-        function saveState() {
-            if (undoStack.length >= maxUndo) undoStack.shift();
-            undoStack.push(canvas.toDataURL());
-        }
-
-        function undo() {
-            if (undoStack.length === 0) return;
-            let previousState = undoStack.pop();
-            let img = new Image();
-            img.src = previousState;
-            img.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
-            };
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('tool-pen').classList.remove('active');
-            document.getElementById('tool-eraser').classList.remove('active');
-            
-            if (mode === 'pen') {
-                document.getElementById('tool-pen').classList.add('active');
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = sizeInput.value;
-            } else if (mode === 'eraser') {
-                document.getElementById('tool-eraser').classList.add('active');
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = Math.max(parseInt(sizeInput.value), 25);
-            }
-        }
-
-        function updateSize(value) {
-            ctx.lineWidth = value;
-        }
-
-        /* 👑 독립 배경 레이어 스타일 제어로 모바일 브라우저 버그 전면 차단 */
-        function fillPattern(type, arg = '') {
-            if (type === 'color') {
-                nailBg.style.background = arg;
-                currentColor = arg;
-                if (currentMode === 'pen') ctx.strokeStyle = currentColor;
-            } else if (type === 'rainbow') {
-                nailBg.style.background = 'linear-gradient(to bottom, #ff7675, #ffeaa7, #74b9ff)';
-            } else if (type === 'dots') {
-                nailBg.style.background = 'radial-gradient(#fff 20%, #fd79a8 21%) 0 0 / 12px 12px';
-            } else if (type === 'clear') {
-                nailBg.style.background = 'radial-gradient(circle, #ffffff, #f7d6e0)';
-            }
-        }
-
-        function clearAll() {
-            saveState();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // 포인터 드래그 제어
-        function startDrag(e, sticker) {
-            // 슬라이더 바 자체 스크롤 터치와 겹치지 않게 드래그 이탈을 계산
-            draggedSticker = sticker;
-            
-            dragGhost = document.createElement('div');
-            dragGhost.className = 'drag-ghost';
-            dragGhost.innerText = sticker;
-            
-            const size = parseInt(sizeInput.value) * 0.75;
-            dragGhost.style.fontSize = `${size}px`;
-            dragGhost.style.left = `${e.clientX}px`;
-            dragGhost.style.top = `${e.clientY}px`;
-            
-            document.body.appendChild(dragGhost);
-            
-            window.addEventListener('pointermove', onDrag);
-            window.addEventListener('pointerup', onDrop);
-        }
-
-        function onDrag(e) {
-            if (!dragGhost) return;
-            dragGhost.style.left = `${e.clientX}px`;
-            dragGhost.style.top = `${e.clientY}px`;
-        }
-
-        function onDrop(e) {
-            if (!dragGhost) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            
-            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                
-                const coords = getCanvasCoords(e.clientX, e.clientY);
-                
-                saveState();
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.font = `${parseInt(sizeInput.value) * 0.75}px 'Malgun Gothic'`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(draggedSticker, coords.x, coords.y);
-            }
-            
-            document.body.removeChild(dragGhost);
-            dragGhost = null;
-            window.removeEventListener('pointermove', onDrag);
-            window.removeEventListener('pointerup', onDrop);
-        }
-
-        // 그리기 영역 이벤트
-        canvas.addEventListener('pointerdown', (e) => {
-            saveState();
-            isDrawing = true;
-            ctx.beginPath();
-            const coords = getCanvasCoords(e.clientX, e.clientY);
-            ctx.moveTo(coords.x, coords.y);
+        historyBody.replaceChildren();
+        [...records].reverse().forEach((record) => {
+          const tr = document.createElement('tr');
+          const indexTd = document.createElement('td');
+          const timeTd = document.createElement('td');
+          const codeTd = document.createElement('td');
+          indexTd.textContent = String(record.number);
+          timeTd.textContent = record.time;
+          codeTd.textContent = record.code;
+          codeTd.className = 'code';
+          tr.append(indexTd, timeTd, codeTd);
+          historyBody.appendChild(tr);
         });
+      }
 
-        canvas.addEventListener('pointermove', (e) => {
-            if (!isDrawing) return;
-            const coords = getCanvasCoords(e.clientX, e.clientY);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.stroke();
-        });
+      function onBarcodeDetected(decodedText) {
+        if (!scanArmed) return;
+        scanArmed = false;
+        lastCode = decodedText;
+        const now = new Date();
+        records.push({ number: records.length + 1, time: formatTime(now), code: decodedText });
 
-        canvas.addEventListener('pointerup', () => isDrawing = false);
-        canvas.addEventListener('pointerleave', () => isDrawing = false);
-    </script>
+        lastResultEl.textContent = decodedText;
+        lastResultMeta.textContent = `인식 시간: ${formatTime(now)} · 형식: CODE_128`;
+        copyBtn.disabled = false;
+        nextBtn.disabled = false;
+        renderHistory();
+        setStatus('인식 성공! 바코드를 바꿔 비춘 뒤 “다음 바코드 인식”을 누르세요.', 'success');
+
+        // 모바일 브라우저가 지원하면 짧게 진동합니다.
+        if (navigator.vibrate) navigator.vibrate(80);
+      }
+
+      async function startScanner() {
+        if (isRunning) return;
+        if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+          setStatus('카메라 접근은 HTTPS에서만 가능합니다. GitHub Pages 주소(https://...)로 페이지를 열어 주세요.', 'error');
+          return;
+        }
+        if (typeof Html5Qrcode === 'undefined') {
+          setStatus('스캔 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 CDN 접근을 확인하고 페이지를 새로고침하세요.', 'error');
+          return;
+        }
+
+        startBtn.disabled = true;
+        setStatus('카메라 권한을 요청하는 중입니다…');
+        scanArmed = true;
+        nextBtn.disabled = true;
+        torchOn = false;
+        torchBtn.textContent = '플래시 켜기';
+
+        try {
+          $('reader').replaceChildren();
+          scanner = new Html5Qrcode('reader', {
+            verbose: false,
+            formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128],
+            // CODE_128 인식 경로가 브라우저마다 달라지지 않도록 ZXing 디코더 사용
+            useBarCodeDetectorIfSupported: false
+          });
+
+          const config = {
+            fps: 12,
+            // QR 코드용 정사각형 대신 가로형 바코드를 고려한 스캔 영역
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+              const width = Math.max(120, Math.floor(Math.min(viewfinderWidth * 0.94, 560)));
+              const height = Math.max(60, Math.floor(Math.min(viewfinderHeight * 0.34, 150, width / 2.5)));
+              return { width, height };
+            },
+            disableFlip: true
+          };
+
+          await scanner.start(
+            { facingMode: 'environment' },
+            config,
+            (decodedText) => onBarcodeDetected(decodedText),
+            () => { /* 디코딩 실패 콜백은 매 프레임 발생할 수 있으므로 화면에 표시하지 않음 */ }
+          );
+
+          setCameraState(true);
+          setStatus('카메라가 켜졌습니다. 바코드를 화면 중앙의 가로 스캔 영역에 맞춰 보세요.');
+        } catch (error) {
+          const detail = error && error.message ? error.message : String(error || '알 수 없는 오류');
+          setCameraState(false);
+          if (scanner) {
+            try { await scanner.clear(); } catch (_) { /* 초기화 중이면 무시 */ }
+          }
+          scanner = null;
+          $('reader').replaceChildren();
+          setStatus(`카메라를 시작하지 못했습니다: ${detail}. 브라우저의 카메라 권한과 HTTPS 연결을 확인하세요.`, 'error');
+        }
+      }
+
+      async function stopScanner() {
+        stopBtn.disabled = true;
+        torchBtn.disabled = true;
+        try {
+          if (scanner && isRunning) await scanner.stop();
+        } catch (error) {
+          console.warn('카메라 종료 중 오류:', error);
+        }
+        try {
+          if (scanner) await scanner.clear();
+        } catch (error) {
+          console.warn('스캐너 정리 중 오류:', error);
+        }
+        scanner = null;
+        setCameraState(false);
+        scanArmed = true;
+        nextBtn.disabled = true;
+        $('reader').replaceChildren();
+        setStatus('카메라를 중지했습니다. 다시 테스트하려면 카메라 시작을 누르세요.');
+      }
+
+      async function toggleTorch() {
+        if (!scanner || !isRunning) return;
+        const desiredState = !torchOn;
+        try {
+          await scanner.applyVideoConstraints({ advanced: [{ torch: desiredState }] });
+          torchOn = desiredState;
+          torchBtn.textContent = torchOn ? '플래시 끄기' : '플래시 켜기';
+          setStatus(torchOn ? '플래시를 켰습니다.' : '플래시를 껐습니다.');
+        } catch (error) {
+          setStatus('이 기기 또는 브라우저에서는 플래시 제어를 지원하지 않거나 허용하지 않습니다. 카메라 영상은 계속 사용할 수 있습니다.', 'warning');
+          console.info('Torch is not available:', error);
+        }
+      }
+
+      async function copyLastResult() {
+        if (!lastCode) return;
+        try {
+          await navigator.clipboard.writeText(lastCode);
+          setStatus('마지막 바코드 값을 클립보드에 복사했습니다.', 'success');
+        } catch (_) {
+          // 일부 브라우저에서 Clipboard API가 차단될 때 선택 가능한 입력창으로 대체
+          const input = document.createElement('textarea');
+          input.value = lastCode;
+          input.setAttribute('readonly', '');
+          input.style.position = 'fixed';
+          input.style.opacity = '0';
+          document.body.appendChild(input);
+          input.select();
+          const copied = document.execCommand('copy');
+          input.remove();
+          setStatus(copied ? '마지막 바코드 값을 복사했습니다.' : '복사하지 못했습니다. 바코드 값을 길게 눌러 복사하세요.', copied ? 'success' : 'warning');
+        }
+      }
+
+      function csvEscape(value) {
+        return `"${String(value).replace(/"/g, '""')}"`;
+      }
+
+      function downloadCsv() {
+        if (!records.length) return;
+        const rows = [['번호', '인식 시간', '바코드 값'], ...records.map(r => [r.number, r.time, r.code])];
+        // Excel에서 한글 및 값이 깨지지 않도록 UTF-8 BOM 추가
+        const csv = '\uFEFF' + rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `barcode-test-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      startBtn.addEventListener('click', startScanner);
+      stopBtn.addEventListener('click', stopScanner);
+      torchBtn.addEventListener('click', toggleTorch);
+      nextBtn.addEventListener('click', () => {
+        scanArmed = true;
+        nextBtn.disabled = true;
+        setStatus('다음 스캔 준비 완료. 다음 바코드를 화면 중앙에 비춰 보세요.');
+      });
+      copyBtn.addEventListener('click', copyLastResult);
+      downloadBtn.addEventListener('click', downloadCsv);
+      clearBtn.addEventListener('click', () => {
+        if (!confirm('인식 기록을 모두 지울까요?')) return;
+        records = [];
+        renderHistory();
+        setStatus('인식 기록을 지웠습니다.');
+      });
+
+      window.addEventListener('pagehide', () => {
+        // 페이지를 닫거나 이동할 때 카메라 리소스 정리를 시도합니다.
+        if (scanner && isRunning) scanner.stop().catch(() => {});
+      });
+    })();
+  </script>
 </body>
 </html>
