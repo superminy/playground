@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
-  <title>CODE_128 바코드 스캔 테스트</title>
+  <title>CODE_128 바코드 스캔 테스트 · 초점 개선판 v2</title>
   <style>
     :root {
       color-scheme: light;
@@ -92,6 +92,11 @@
     .result-value { font-size: clamp(22px, 5vw, 30px); font-weight: 850; letter-spacing: .02em; overflow-wrap: anywhere; word-break: break-word; }
     .result-meta { color: var(--muted); font-size: 12px; margin-top: 5px; }
     .help { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+    .camera-tuning { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcfe; }
+    .zoom-row { display: flex; align-items: center; gap: 12px; }
+    .zoom-row label { font-size: 13px; font-weight: 750; white-space: nowrap; }
+    .zoom-row input { width: 100%; min-width: 80px; }
+    #cameraInfo { margin: 0; }
     .stats { display: flex; gap: 8px; flex-wrap: wrap; }
     .stat { border: 1px solid var(--line); padding: 7px 10px; border-radius: 10px; background: #fbfcfe; font-size: 13px; color: var(--muted); }
     .stat strong { color: var(--text); font-size: 15px; margin-left: 4px; }
@@ -113,7 +118,7 @@
 <body>
   <main class="page">
     <header>
-      <p class="eyebrow">ASSET MANAGER · CAMERA CHECK</p>
+      <p class="eyebrow">ASSET MANAGER · CAMERA CHECK · V2</p>
       <h1>바코드 스캔 테스트</h1>
       <p class="subtitle">기존 안드로이드 앱과 비교하기 위한 테스트 페이지입니다. CODE_128만 인식합니다.</p>
     </header>
@@ -131,7 +136,16 @@
           <button id="startBtn" class="primary" type="button">카메라 시작</button>
           <button id="nextBtn" type="button" disabled>다음 바코드 인식</button>
           <button id="torchBtn" type="button" disabled>플래시 켜기</button>
+          <button id="focusBtn" type="button" disabled>자동초점 재요청</button>
           <button id="stopBtn" type="button" disabled>카메라 중지</button>
+        </div>
+        <div class="camera-tuning">
+          <div class="zoom-row" id="zoomControlWrap" hidden>
+            <label for="zoomRange">카메라 줌</label>
+            <input id="zoomRange" type="range" min="1" max="3" step="0.1" value="1" disabled>
+            <strong id="zoomValue">1.0×</strong>
+          </div>
+          <p id="cameraInfo" class="help">카메라가 시작되면 해상도와 지원되는 초점/줌 기능을 표시합니다.</p>
         </div>
         <p id="status" class="status" role="status" aria-live="polite">카메라 시작을 누르세요. 카메라 권한을 허용해야 합니다.</p>
 
@@ -143,7 +157,7 @@
             <button id="copyBtn" type="button" disabled>결과 복사</button>
           </div>
         </div>
-        <p class="help">인식 후 중복 기록을 막기 위해 한 번 잠깁니다. 바코드를 바꿔 비춘 다음 <strong>다음 바코드 인식</strong>을 누르세요. 플래시는 기기·브라우저가 지원할 때만 작동합니다.</p>
+        <p class="help">초점 개선판: 1080p 영상과 연속 자동초점을 우선 요청합니다. 기기에서 줌을 지원하면 슬라이더가 나타납니다. 인식 후 중복 기록을 막기 위해 한 번 잠기므로, 다음 바코드는 <strong>다음 바코드 인식</strong>을 누르세요. 플래시/초점/줌 지원은 기기·브라우저에 따라 다릅니다.</p>
       </section>
 
       <section class="panel" aria-labelledby="history-title">
@@ -178,7 +192,12 @@
       const startBtn = $('startBtn');
       const nextBtn = $('nextBtn');
       const torchBtn = $('torchBtn');
+      const focusBtn = $('focusBtn');
       const stopBtn = $('stopBtn');
+      const zoomControlWrap = $('zoomControlWrap');
+      const zoomRange = $('zoomRange');
+      const zoomValue = $('zoomValue');
+      const cameraInfo = $('cameraInfo');
       const copyBtn = $('copyBtn');
       const downloadBtn = $('downloadBtn');
       const clearBtn = $('clearBtn');
@@ -196,6 +215,8 @@
       let torchOn = false;
       let lastCode = '';
       let records = [];
+      let cameraCapabilities = null;
+      let zoomTimer = null;
 
       function setStatus(message, type = '') {
         statusEl.textContent = message;
@@ -207,17 +228,98 @@
         startBtn.disabled = running;
         stopBtn.disabled = !running;
         torchBtn.disabled = !running;
+        focusBtn.disabled = !running;
+        zoomRange.disabled = !running || !cameraCapabilities || !cameraCapabilities.zoom;
         nextBtn.disabled = !running || scanArmed;
         cameraBadge.textContent = running ? '카메라 실행 중' : '카메라 중지됨';
         cameraBadge.className = `tag${running ? ' good' : ''}`;
         if (!running) {
           torchOn = false;
           torchBtn.textContent = '플래시 켜기';
+          cameraCapabilities = null;
+          zoomControlWrap.hidden = true;
+          cameraInfo.textContent = '카메라가 중지되었습니다.';
         }
       }
 
       function formatTime(date = new Date()) {
         return date.toLocaleString('ko-KR', { hour12: false });
+      }
+
+      function refreshCameraInfo() {
+        if (!scanner || !isRunning) return;
+        let settings = {};
+        try {
+          settings = typeof scanner.getRunningTrackSettings === 'function'
+            ? scanner.getRunningTrackSettings() : {};
+        } catch (_) {}
+        try {
+          cameraCapabilities = typeof scanner.getRunningTrackCameraCapabilities === 'function'
+            ? scanner.getRunningTrackCameraCapabilities() : {};
+        } catch (_) { cameraCapabilities = {}; }
+
+        const dimensions = settings.width && settings.height
+          ? `${settings.width}×${settings.height}` : '해상도 정보 미제공';
+        const focusModes = cameraCapabilities && Array.isArray(cameraCapabilities.focusMode)
+          ? cameraCapabilities.focusMode.join(', ') : '';
+        const focusText = focusModes
+          ? `초점 제어: ${focusModes}`
+          : '초점 제어: 브라우저에서 상세 설정을 제공하지 않음(기기 자동초점에 의존)';
+        const zoom = cameraCapabilities && cameraCapabilities.zoom;
+        if (zoom && Number.isFinite(zoom.min) && Number.isFinite(zoom.max) && zoom.max > zoom.min) {
+          zoomControlWrap.hidden = false;
+          zoomRange.min = String(zoom.min);
+          zoomRange.max = String(zoom.max);
+          zoomRange.step = String(zoom.step && zoom.step > 0 ? zoom.step : 0.1);
+          const currentZoom = Number.isFinite(settings.zoom) ? settings.zoom : zoom.min;
+          zoomRange.value = String(Math.min(zoom.max, Math.max(zoom.min, currentZoom)));
+          zoomValue.textContent = `${Number(zoomRange.value).toFixed(1)}×`;
+          zoomRange.disabled = false;
+        } else {
+          zoomControlWrap.hidden = true;
+          zoomRange.disabled = true;
+        }
+        cameraInfo.textContent = `실제 카메라 영상: ${dimensions} · ${focusText}`;
+        focusBtn.disabled = false;
+      }
+
+      async function requestAutofocus(showMessage = true) {
+        if (!scanner || !isRunning) return;
+        try {
+          const caps = cameraCapabilities || (typeof scanner.getRunningTrackCameraCapabilities === 'function'
+            ? scanner.getRunningTrackCameraCapabilities() : {});
+          const supportedModes = caps && Array.isArray(caps.focusMode) ? caps.focusMode : [];
+          let mode = null;
+          if (supportedModes.includes('continuous')) mode = 'continuous';
+          else if (supportedModes.includes('single-shot')) mode = 'single-shot';
+
+          if (mode) {
+            await scanner.applyVideoConstraints({ advanced: [{ focusMode: mode }] });
+            if (showMessage) setStatus(`카메라에 ${mode === 'continuous' ? '연속 자동초점' : '1회 자동초점'}을 요청했습니다. 실제 적용은 기기 지원 여부에 따라 달라집니다.`, 'success');
+          } else {
+            // Try a best-effort continuous autofocus request. Unsupported advanced
+            // constraints may be ignored by the browser, so this is never treated as guaranteed.
+            await scanner.applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] });
+            if (showMessage) setStatus('자동초점 설정 요청을 보냈습니다. 브라우저가 초점 제어를 제공하지 않으면 실제 초점은 기기의 자동초점 기능에 맡겨집니다.', 'warning');
+          }
+        } catch (error) {
+          if (showMessage) setStatus('브라우저가 초점 모드 변경을 허용하지 않았습니다. 고해상도 영상과 휴대전화 자체 자동초점으로 계속 테스트하세요.', 'warning');
+          console.info('Autofocus constraint not available:', error);
+        }
+        refreshCameraInfo();
+      }
+
+      async function applyZoom() {
+        if (!scanner || !isRunning || !cameraCapabilities || !cameraCapabilities.zoom) return;
+        const zoom = Number(zoomRange.value);
+        zoomValue.textContent = `${zoom.toFixed(1)}×`;
+        try {
+          await scanner.applyVideoConstraints({ advanced: [{ zoom }] });
+          cameraInfo.textContent = `줌 ${zoom.toFixed(1)}× 적용 요청 완료. 카메라를 바코드에 너무 가까이 대지 말고 거리를 두고 맞춰 보세요.`;
+        } catch (error) {
+          setStatus('이 카메라에서는 웹 줌 조절을 적용할 수 없습니다.', 'warning');
+          console.info('Zoom constraint not available:', error);
+        }
       }
 
       function renderHistory() {
@@ -293,24 +395,41 @@
 
           const config = {
             fps: 12,
+            // 모바일 브라우저 기본 해상도가 낮게 선택되는 경우를 줄이기 위해
+            // 1080p를 우선 요청합니다. 기기가 지원하지 않으면 가능한 설정이 선택됩니다.
+            videoConstraints: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              frameRate: { ideal: 30, max: 30 },
+              // 일부 Android/Chrome 카메라에서만 적용됩니다.
+              advanced: [
+                { focusMode: 'continuous' },
+                { exposureMode: 'continuous' },
+                { whiteBalanceMode: 'continuous' }
+              ]
+            },
             // QR 코드용 정사각형 대신 가로형 바코드를 고려한 스캔 영역
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-              const width = Math.max(120, Math.floor(Math.min(viewfinderWidth * 0.94, 560)));
-              const height = Math.max(60, Math.floor(Math.min(viewfinderHeight * 0.34, 150, width / 2.5)));
+              const width = Math.max(120, Math.floor(Math.min(viewfinderWidth * 0.96, 720)));
+              const height = Math.max(70, Math.floor(Math.min(viewfinderHeight * 0.42, 190, width / 2.2)));
               return { width, height };
             },
             disableFlip: true
           };
 
           await scanner.start(
-            { facingMode: 'environment' },
+            { facingMode: { ideal: 'environment' } },
             config,
             (decodedText) => onBarcodeDetected(decodedText),
             () => { /* 디코딩 실패 콜백은 매 프레임 발생할 수 있으므로 화면에 표시하지 않음 */ }
           );
 
           setCameraState(true);
-          setStatus('카메라가 켜졌습니다. 바코드를 화면 중앙의 가로 스캔 영역에 맞춰 보세요.');
+          refreshCameraInfo();
+          // 일부 기기에서는 스트림 시작 직후 초점 설정을 적용하는 편이 안정적입니다.
+          await requestAutofocus(false);
+          setStatus('초점 개선 설정으로 카메라가 켜졌습니다. 바코드가 선명해질 때까지 잠시 기다린 뒤 테스트하세요.');
         } catch (error) {
           const detail = error && error.message ? error.message : String(error || '알 수 없는 오류');
           setCameraState(false);
@@ -401,6 +520,11 @@
       startBtn.addEventListener('click', startScanner);
       stopBtn.addEventListener('click', stopScanner);
       torchBtn.addEventListener('click', toggleTorch);
+      focusBtn.addEventListener('click', () => requestAutofocus(true));
+      zoomRange.addEventListener('input', () => {
+        if (zoomTimer) clearTimeout(zoomTimer);
+        zoomTimer = setTimeout(applyZoom, 180);
+      });
       nextBtn.addEventListener('click', () => {
         scanArmed = true;
         nextBtn.disabled = true;
