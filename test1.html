@@ -1,117 +1,471 @@
-
 <!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>CODE_128 바코드 테스트 v7.3</title>
-<style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f3f5f8}
-*{box-sizing:border-box}
-body{margin:0;line-height:1.45}
-main{max-width:1100px;margin:auto;padding:12px}
-h1{font-size:clamp(23px,5vw,30px);margin:0 0 5px}
-h2{font-size:17px;margin:0}
-.muted{color:#637086;font-size:13px}
-.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.85fr);gap:12px;align-items:start}
-.panel{background:#fff;border:1px solid #dce2ea;border-radius:14px;padding:13px;margin-top:12px;min-width:0}
-.heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.tag{font-size:12px;padding:4px 9px;border-radius:99px;background:#edf1f6;color:#536176}
-.tag.good{background:#e8f6ee;color:#157347}
+<title>CODE_128 바코드 테스트 v7.3 - 성공 팝업</title>
 
-/* 카메라 화면은 가로형 16:9, 영상은 잘리지 않게 표시 */
-#videoWrap{
- position:relative;width:100%;aspect-ratio:16/9;min-height:180px;
- max-height:280px;background:#101722;border:1px solid #263244;
- border-radius:11px;overflow:hidden;touch-action:manipulation
+<style>
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f3f5f8;
 }
-#video{
- position:absolute;inset:0;display:block;width:100%;height:100%;
- object-fit:contain;background:#101722;touch-action:manipulation
+
+* {
+  box-sizing: border-box;
 }
-#guide{
- position:absolute;left:5%;top:20%;width:90%;height:60%;
- border:2px solid #35d07f;border-radius:5px;
- box-shadow:0 0 0 999px rgba(0,0,0,.12);
- pointer-events:none;z-index:2
+
+body {
+  margin: 0;
+  line-height: 1.45;
 }
-#guide:before,#guide:after{
- content:"";position:absolute;width:18px;height:18px;
- border-color:#fff;border-style:solid
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 12px;
 }
-#guide:before{top:-2px;left:-2px;border-width:4px 0 0 4px}
-#guide:after{right:-2px;bottom:-2px;border-width:0 4px 4px 0}
-#scanLine{
- position:absolute;left:2%;right:2%;top:50%;height:1px;
- background:rgba(255,80,80,.9);box-shadow:0 0 4px #f33
+
+h1 {
+  font-size: clamp(23px, 5vw, 30px);
+  margin: 0 0 5px;
 }
-#guideLabel{
- position:absolute;top:-23px;left:0;color:#fff;background:#137a45;
- font-size:11px;padding:2px 6px;border-radius:4px
+
+h2 {
+  font-size: 17px;
+  margin: 0;
 }
-.buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-button,select{
- min-height:41px;border:1px solid #cfd6e0;border-radius:9px;
- padding:7px 10px;background:#fff;color:#172033;font:inherit
+
+.muted {
+  color: #637086;
+  font-size: 13px;
 }
-button{font-weight:700;cursor:pointer}
-button.primary{color:#fff;background:#1769e0;border-color:#1769e0}
-button:disabled{opacity:.45;cursor:not-allowed}
-.selectrow{
- display:grid;grid-template-columns:75px 1fr;align-items:center;
- gap:8px;margin-top:10px
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .85fr);
+  gap: 12px;
+  align-items: start;
 }
-.selectrow select{width:100%;min-width:0}
-.status{
- padding:9px 11px;background:#edf2f8;border-radius:9px;
- overflow-wrap:anywhere;font-size:13px;margin-top:10px
+
+.panel {
+  background: #fff;
+  border: 1px solid #dce2ea;
+  border-radius: 14px;
+  padding: 13px;
+  margin-top: 12px;
+  min-width: 0;
 }
-.status.ok{color:#157347;background:#e8f6ee}
-.status.warn{color:#8a5400;background:#fff3d8}
-.status.err{color:#b42318;background:#ffebe9}
-.result{
- font-size:clamp(22px,5vw,29px);font-weight:800;
- overflow-wrap:anywhere;word-break:break-word;padding:8px 0 2px
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.sliderrow{
- display:none;grid-template-columns:85px 1fr 52px;
- align-items:center;gap:8px;margin-top:10px;font-size:13px
+
+.tag {
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: #edf1f6;
+  color: #536176;
 }
-.sliderrow input{width:100%;min-width:0}
-.hint{
- background:#f8fafc;border:1px solid #e2e8f0;padding:9px 10px;
- border-radius:9px;font-size:12px;color:#526176;margin-top:9px
+
+.tag.good {
+  background: #e8f6ee;
+  color: #157347;
 }
-#logPanel{position:sticky;top:10px}
-.log-tools{display:flex;gap:6px;flex-wrap:wrap}
-.log-tools button{min-height:34px;font-size:12px;padding:5px 8px}
-.log-meta{font-size:12px;color:#637086;margin:8px 0}
-#logBox{
- height:330px;overflow:auto;background:#0d1523;color:#d9e4f5;
- border-radius:9px;padding:8px;font:11px/1.45 ui-monospace,Consolas,monospace;
- white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word
+
+/* 가로형 카메라 화면 */
+#videoWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 180px;
+  max-height: 280px;
+  background: #101722;
+  border: 1px solid #263244;
+  border-radius: 11px;
+  overflow: hidden;
+  touch-action: manipulation;
 }
-.logline{padding:3px 0;border-bottom:1px solid #223047}
-.logline.err{color:#ffaaa5}
-.logline.warn{color:#ffd580}
-.logline.ok{color:#91f2b1}
-.logline.info{color:#c4d7ff}
-.tablewrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:8px 7px;border-bottom:1px solid #e2e7ef;vertical-align:top}
-th{color:#637086;white-space:nowrap}
-td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
-@media(max-width:680px){
- main{padding:10px}
- .layout{grid-template-columns:minmax(0,1fr)}
- #videoWrap{min-height:180px;max-height:235px}
- #logPanel{position:static}
- #logBox{height:220px}
- .panel{padding:11px}
+
+#video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #101722;
+  touch-action: manipulation;
+}
+
+#guide {
+  position: absolute;
+  left: 5%;
+  top: 20%;
+  width: 90%;
+  height: 60%;
+  border: 2px solid #35d07f;
+  border-radius: 5px;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, .12);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#guide:before,
+#guide:after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: #fff;
+  border-style: solid;
+}
+
+#guide:before {
+  top: -2px;
+  left: -2px;
+  border-width: 4px 0 0 4px;
+}
+
+#guide:after {
+  right: -2px;
+  bottom: -2px;
+  border-width: 0 4px 4px 0;
+}
+
+#scanLine {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 80, 80, .9);
+  box-shadow: 0 0 4px #f33;
+}
+
+#guideLabel {
+  position: absolute;
+  top: -23px;
+  left: 0;
+  color: #fff;
+  background: #137a45;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+button,
+select {
+  min-height: 41px;
+  border: 1px solid #cfd6e0;
+  border-radius: 9px;
+  padding: 7px 10px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+}
+
+button {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button.primary {
+  color: #fff;
+  background: #1769e0;
+  border-color: #1769e0;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.selectrow {
+  display: grid;
+  grid-template-columns: 75px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.selectrow select {
+  width: 100%;
+  min-width: 0;
+}
+
+.status {
+  padding: 9px 11px;
+  background: #edf2f8;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.status.ok {
+  color: #157347;
+  background: #e8f6ee;
+}
+
+.status.warn {
+  color: #8a5400;
+  background: #fff3d8;
+}
+
+.status.err {
+  color: #b42318;
+  background: #ffebe9;
+}
+
+.result {
+  font-size: clamp(22px, 5vw, 29px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  padding: 8px 0 2px;
+}
+
+.sliderrow {
+  display: none;
+  grid-template-columns: 85px 1fr 52px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.sliderrow input {
+  width: 100%;
+  min-width: 0;
+}
+
+.hint {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 12px;
+  color: #526176;
+  margin-top: 9px;
+}
+
+#logPanel {
+  position: sticky;
+  top: 10px;
+}
+
+.log-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.log-tools button {
+  min-height: 34px;
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.log-meta {
+  font-size: 12px;
+  color: #637086;
+  margin: 8px 0;
+}
+
+#logBox {
+  height: 330px;
+  overflow: auto;
+  background: #0d1523;
+  color: #d9e4f5;
+  border-radius: 9px;
+  padding: 8px;
+  font: 11px/1.45 ui-monospace, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.logline {
+  padding: 3px 0;
+  border-bottom: 1px solid #223047;
+}
+
+.logline.err {
+  color: #ffaaa5;
+}
+
+.logline.warn {
+  color: #ffd580;
+}
+
+.logline.ok {
+  color: #91f2b1;
+}
+
+.logline.info {
+  color: #c4d7ff;
+}
+
+.tablewrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 7px;
+  border-bottom: 1px solid #e2e7ef;
+  vertical-align: top;
+}
+
+th {
+  color: #637086;
+  white-space: nowrap;
+}
+
+td.code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-weight: 700;
+}
+
+/* 바코드 인식 성공 팝업 */
+#successPopup[hidden] {
+  display: none !important;
+}
+
+#successPopup {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .65);
+}
+
+#successPopup .popup-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 24px 18px 18px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+}
+
+#successPopup .popup-icon {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: #e8f6ee;
+  color: #157347;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+#successPopup .popup-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+#successPopup .popup-message {
+  margin: 0 0 12px;
+  color: #637086;
+  font-size: 13px;
+}
+
+#successPopup .popup-code {
+  padding: 14px 10px;
+  margin-bottom: 17px;
+  border: 1px solid #dce6f5;
+  border-radius: 10px;
+  background: #f0f5fc;
+  color: #172033;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 23px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  user-select: text;
+}
+
+#successPopup .popup-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#successPopup .popup-buttons button {
+  flex: 1;
+  min-height: 44px;
+}
+
+#popupNextBtn {
+  color: #fff;
+  background: #1769e0;
+  border-color: #1769e0;
+}
+
+#popupCloseBtn {
+  color: #172033;
+  background: #edf1f6;
+}
+
+@media(max-width:680px) {
+  main {
+    padding: 10px;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #videoWrap {
+    min-height: 180px;
+    max-height: 235px;
+  }
+
+  #logPanel {
+    position: static;
+  }
+
+  #logBox {
+    height: 220px;
+  }
+
+  .panel {
+    padding: 11px;
+  }
 }
 </style>
 
+<!-- 기존 v7.3 라이브러리 유지 -->
 <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
 <script src="https://unpkg.com/@zxing/browser@0.2.1/umd/zxing-browser.min.js"></script>
 </head>
@@ -122,6 +476,7 @@ td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
 <p class="muted">CODE_128 전용 · 가로형 화면 · 단계별 카메라/인식 로그</p>
 
 <div class="layout">
+
 <section class="panel">
   <div class="heading">
     <h2>1. 카메라 스캔</h2>
@@ -130,6 +485,7 @@ td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
 
   <div id="videoWrap">
     <video id="video" autoplay muted playsinline></video>
+
     <div id="guide">
       <span id="guideLabel">바코드를 가이드 안에 맞추세요</span>
       <div id="scanLine"></div>
@@ -170,6 +526,7 @@ td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
   </div>
 
   <p id="cameraInfo" class="muted">카메라 시작 후 정보가 표시됩니다.</p>
+
   <div id="status" class="status" role="status" aria-live="polite">
     카메라 시작을 눌러 주세요.
   </div>
@@ -191,9 +548,18 @@ td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
 
   <div class="tablewrap">
     <table>
-      <thead><tr><th>번호</th><th>시간</th><th>바코드</th></tr></thead>
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>시간</th>
+          <th>바코드</th>
+        </tr>
+      </thead>
+
       <tbody id="history">
-        <tr><td colspan="3" class="muted">아직 기록이 없습니다.</td></tr>
+        <tr>
+          <td colspan="3" class="muted">아직 기록이 없습니다.</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -213,10 +579,39 @@ td.code{overflow-wrap:anywhere;word-break:break-word;font-weight:700}
 
   <p class="log-meta" id="logSummary">카메라 실행 및 인식 상태를 기록합니다.</p>
   <div id="logBox" aria-live="polite"></div>
-  <p class="muted">인식 실패 시 5~10초 기다린 다음 로그 복사 버튼을 눌러 보내 주세요.</p>
+
+  <p class="muted">
+    인식 실패 시 5~10초 기다린 다음 로그 복사 버튼을 눌러 보내 주세요.
+  </p>
 </section>
+
 </div>
 </main>
+
+<!-- 실제 바코드 인식에 성공한 경우에만 표시 -->
+<div id="successPopup" hidden>
+  <div class="popup-card">
+    <div class="popup-icon">✓</div>
+
+    <h2 class="popup-title">인식 성공</h2>
+
+    <p id="popupMessage" class="popup-message">
+      바코드를 정상적으로 읽었습니다.
+    </p>
+
+    <div id="popupCode" class="popup-code"></div>
+
+    <div class="popup-buttons">
+      <button id="popupNextBtn" type="button">
+        다음 바코드
+      </button>
+
+      <button id="popupCloseBtn" type="button">
+        닫기
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -259,6 +654,13 @@ const copyLogBtn = $('copyLogBtn');
 const clearLogBtn = $('clearLogBtn');
 const showDebugBtn = $('showDebugBtn');
 
+/* 팝업 요소 */
+const successPopup = $('successPopup');
+const popupMessage = $('popupMessage');
+const popupCode = $('popupCode');
+const popupNextBtn = $('popupNextBtn');
+const popupCloseBtn = $('popupCloseBtn');
+
 let stream = null;
 let track = null;
 let reader = null;
@@ -283,6 +685,47 @@ let pendingCameraTimer = null;
 
 const MAX_LOGS = 180;
 
+/* 팝업 숨기기 */
+function hideSuccessPopup() {
+  successPopup.hidden = true;
+}
+
+/*
+ * 성공 팝업 표시.
+ * 실제 디코딩된 코드가 있을 때만 호출합니다.
+ */
+function showSuccessPopup(code, format) {
+  const value = String(code || '').trim();
+
+  if (!value) {
+    return;
+  }
+
+  popupCode.textContent = value;
+
+  let formatName = 'CODE_128';
+
+  try {
+    const formats = window.ZXing && window.ZXing.BarcodeFormat;
+
+    if (formats) {
+      const found = Object.entries(formats).find(([name, enumValue]) =>
+        !/^\d+$/.test(name) && enumValue === format
+      );
+
+      if (found) {
+        formatName = found[0];
+      }
+    }
+  } catch (_) {
+    /* 형식명을 찾지 못해도 인식된 코드 자체는 표시 */
+  }
+
+  popupMessage.textContent = '바코드 형식: ' + formatName;
+
+  successPopup.hidden = false;
+}
+
 function setStatus(message, type = '') {
   if (statusEl) {
     statusEl.textContent = message;
@@ -295,12 +738,14 @@ function setStatus(message, type = '') {
 }
 
 function log(message, level = 'info') {
-  const time = new Date().toLocaleTimeString('ko-KR', {hour12:false});
+  const time = new Date().toLocaleTimeString('ko-KR', {
+    hour12: false
+  });
 
   logs.push({
     time,
     level,
-    message:String(message)
+    message: String(message)
   });
 
   if (logs.length > MAX_LOGS) {
@@ -335,13 +780,17 @@ function setButtons() {
 
   badge.textContent = running
     ? '카메라 실행 중'
-    : starting ? '카메라 시작 중' : '준비/중지';
+    : starting
+      ? '카메라 시작 중'
+      : '준비/중지';
 
   badge.className = 'tag' + (running ? ' good' : '');
 }
 
 function timeText(date = new Date()) {
-  return date.toLocaleString('ko-KR', {hour12:false});
+  return date.toLocaleString('ko-KR', {
+    hour12: false
+  });
 }
 
 function safeJson(value) {
@@ -363,8 +812,7 @@ function getCaps() {
 }
 
 /*
- * getUserMedia() 단계가 오래 걸리는지도 로그에 남깁니다.
- * 제한 시간은 진단용 알림이며 카메라 요청을 강제로 취소하지는 않습니다.
+ * getUserMedia 단계가 오래 걸리는지도 로그에 남깁니다.
  */
 async function requestCameraWithLog(constraints, label) {
   log(`${label}: getUserMedia 호출`);
@@ -376,6 +824,7 @@ async function requestCameraWithLog(constraints, label) {
         '카메라 요청이 8초 넘게 대기 중입니다. 권한 팝업, 카메라 점유 여부를 확인하세요.',
         'warn'
       );
+
       setStatus(
         '카메라 권한/장치 응답을 기다리는 중입니다. 브라우저 권한을 확인하세요.',
         'warn'
@@ -430,7 +879,11 @@ function updateInfo() {
     `줌 ${z && z.max > z.min ? '지원' : '미노출'} · ` +
     `수동 초점 ${fd && fd.max > fd.min ? '지원' : '미노출'}`;
 
-  if (settings.width && settings.height && settings.width < settings.height) {
+  if (
+    settings.width &&
+    settings.height &&
+    settings.width < settings.height
+  ) {
     log(
       '주의: 실제 카메라 영상은 세로 비율입니다. 화면 창은 가로형이지만 원본 비율은 다릅니다.',
       'warn'
@@ -511,13 +964,14 @@ function buildReader() {
   reader = new ZXingBrowser.BrowserMultiFormatReader(
     hints,
     {
-      delayBetweenScanAttempts:150,
-      delayBetweenScanSuccess:350,
-      tryPlayVideoTimeout:5000
+      delayBetweenScanAttempts: 150,
+      delayBetweenScanSuccess: 350,
+      tryPlayVideoTimeout: 5000
     }
   );
 
   log('ZXing 인식기 생성 성공', 'ok');
+
   log(
     `디코더 설정: CODE_128=${ZXing.BarcodeFormat.CODE_128}, TRY_HARDER=true`
   );
@@ -530,9 +984,9 @@ async function tuneCamera() {
 
   try {
     await track.applyConstraints({
-      width:{ideal:1920},
-      height:{ideal:1080},
-      frameRate:{ideal:30}
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      frameRate: { ideal: 30 }
     });
 
     log('고해상도 영상 요청 완료');
@@ -552,7 +1006,7 @@ async function tuneCamera() {
       caps.focusMode.includes('continuous')
     ) {
       await track.applyConstraints({
-        advanced:[{focusMode:'continuous'}]
+        advanced: [{ focusMode: 'continuous' }]
       });
 
       log('연속 자동초점 요청 완료', 'ok');
@@ -577,7 +1031,12 @@ async function tuneCamera() {
   const z = caps.zoom;
   const fd = caps.focusDistance;
 
-  if (z && Number.isFinite(z.min) && Number.isFinite(z.max) && z.max > z.min) {
+  if (
+    z &&
+    Number.isFinite(z.min) &&
+    Number.isFinite(z.max) &&
+    z.max > z.min
+  ) {
     zoomRow.style.display = 'grid';
     zoom.min = z.min;
     zoom.max = z.max;
@@ -589,11 +1048,17 @@ async function tuneCamera() {
     );
 
     zoomText.textContent = Number(zoom.value).toFixed(1) + '×';
+
   } else {
     zoomRow.style.display = 'none';
   }
 
-  if (fd && Number.isFinite(fd.min) && Number.isFinite(fd.max) && fd.max > fd.min) {
+  if (
+    fd &&
+    Number.isFinite(fd.min) &&
+    Number.isFinite(fd.max) &&
+    fd.max > fd.min
+  ) {
     focusRow.style.display = 'grid';
     focusDistance.min = fd.min;
     focusDistance.max = fd.max;
@@ -606,6 +1071,7 @@ async function tuneCamera() {
     );
 
     focusText.textContent = Number(focusDistance.value).toFixed(2);
+
   } else {
     focusRow.style.display = 'none';
   }
@@ -613,18 +1079,18 @@ async function tuneCamera() {
   updateInfo();
 
   log(`실제 카메라 설정: ${safeJson(settings)}`);
+
   log(`카메라 지원 기능: ${safeJson({
-    focusMode:caps.focusMode,
-    focusDistance:caps.focusDistance,
-    zoom:caps.zoom,
-    torch:caps.torch
+    focusMode: caps.focusMode,
+    focusDistance: caps.focusDistance,
+    zoom: caps.zoom,
+    torch: caps.torch
   })}`);
 }
 
 /*
- * 핵심 수정:
- * 브라우저 라이브러리가 지원하는 실제 video 요소를 판독합니다.
- * HTMLCanvasElement를 reader.scan()에 직접 넘기지 않습니다.
+ * 중요: 보내주신 v7.3의 인식 방식을 그대로 유지했습니다.
+ * 성공 결과가 있을 때만 onBarcode()를 실행합니다.
  */
 function startDecoder() {
   try {
@@ -651,11 +1117,13 @@ function startDecoder() {
 
       if (result) {
         const value = result.getText();
+
         const format = result.getBarcodeFormat
           ? result.getBarcodeFormat()
           : '';
 
         log(`인식 성공: format=${format}, 값=${value}`, 'ok');
+
         onBarcode(value, format);
         return;
       }
@@ -677,6 +1145,7 @@ function startDecoder() {
 
         } else if (`${name}:${message}` !== lastOtherError) {
           lastOtherError = `${name}:${message}`;
+
           log(`디코더 예외 ${name}: ${message}`, 'err');
         }
       }
@@ -695,9 +1164,11 @@ function startDecoder() {
       if (reader === activeReader && running) {
         scanControls = controls;
         log('ZXing 연속 인식 루프 실행 중', 'ok');
+
       } else {
         controls.stop();
       }
+
     }).catch(error => {
       log(
         `디코딩 시작 실패: ${error.name || ''} ${error.message || error}`,
@@ -717,21 +1188,30 @@ function startDecoder() {
   }
 }
 
+/*
+ * 실제 바코드 인식 성공 시 호출됩니다.
+ * 팝업은 이 함수의 마지막에서만 표시합니다.
+ */
 function onBarcode(code, format) {
   if (locked || !running) return;
 
+  if (code == null || String(code).trim() === '') {
+    return;
+  }
+
   locked = true;
-  lastCode = code;
+  lastCode = String(code);
 
   const now = new Date();
 
   records.push({
-    number:records.length + 1,
-    time:timeText(now),
-    code
+    number: records.length + 1,
+    time: timeText(now),
+    code: lastCode
   });
 
-  lastResult.textContent = code;
+  lastResult.textContent = lastCode;
+
   lastMeta.textContent =
     `인식 시간: ${timeText(now)} · 형식: ${format || 'CODE_128'}`;
 
@@ -745,7 +1225,12 @@ function onBarcode(code, format) {
     'ok'
   );
 
-  if (navigator.vibrate) navigator.vibrate(60);
+  if (navigator.vibrate) {
+    navigator.vibrate(60);
+  }
+
+  /* 추가된 부분: 실제 성공 결과가 있을 때만 팝업 표시 */
+  showSuccessPopup(lastCode, format);
 }
 
 async function startCamera() {
@@ -759,10 +1244,12 @@ async function startCamera() {
 
   if (!window.ZXing || !window.ZXingBrowser) {
     setStatus('ZXing 라이브러리를 로딩하지 못했습니다.', 'err');
+
     log(
       `라이브러리 상태: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`,
       'err'
     );
+
     return;
   }
 
@@ -772,18 +1259,22 @@ async function startCamera() {
 
   log('===== 카메라 시작 요청 =====');
   log(`브라우저: ${navigator.userAgent}`);
-  log(`라이브러리: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`);
+
+  log(
+    `라이브러리: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`
+  );
 
   const selectedId = cameraSelect.value;
 
   const preferredVideo = {
     ...(selectedId
-      ? {deviceId:{exact:selectedId}}
-      : {facingMode:{ideal:'environment'}}),
-    width:{ideal:1920},
-    height:{ideal:1080},
-    aspectRatio:{ideal:16/9},
-    frameRate:{ideal:24}
+      ? { deviceId: { exact: selectedId } }
+      : { facingMode: { ideal: 'environment' } }),
+
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    aspectRatio: { ideal: 16 / 9 },
+    frameRate: { ideal: 24 }
   };
 
   log(`카메라 제약: ${safeJson(preferredVideo)}`);
@@ -791,7 +1282,7 @@ async function startCamera() {
   try {
     try {
       stream = await requestCameraWithLog(
-        {audio:false, video:preferredVideo},
+        { audio: false, video: preferredVideo },
         '우선 설정'
       );
 
@@ -799,11 +1290,11 @@ async function startCamera() {
       log('우선 설정 실패. 기본 카메라 설정으로 재시도합니다.', 'warn');
 
       const fallbackVideo = selectedId
-        ? {deviceId:{exact:selectedId}}
-        : {facingMode:{ideal:'environment'}};
+        ? { deviceId: { exact: selectedId } }
+        : { facingMode: { ideal: 'environment' } };
 
       stream = await requestCameraWithLog(
-        {audio:false, video:fallbackVideo},
+        { audio: false, video: fallbackVideo },
         '기본 설정'
       );
     }
@@ -811,6 +1302,7 @@ async function startCamera() {
     log('카메라 스트림 수신 완료', 'ok');
 
     video.srcObject = stream;
+
     log('video.srcObject 설정 완료');
 
     await new Promise((resolve, reject) => {
@@ -818,6 +1310,7 @@ async function startCamera() {
 
       const cleanup = () => {
         clearTimeout(timer);
+
         video.removeEventListener('loadedmetadata', onReady);
         video.removeEventListener('error', onError);
       };
@@ -839,11 +1332,14 @@ async function startCamera() {
 
       timer = setTimeout(() => {
         cleanup();
-        reject(new Error('10초 동안 카메라 영상이 준비되지 않았습니다.'));
+
+        reject(
+          new Error('10초 동안 카메라 영상이 준비되지 않았습니다.')
+        );
       }, 10000);
 
-      video.addEventListener('loadedmetadata', onReady, {once:true});
-      video.addEventListener('error', onError, {once:true});
+      video.addEventListener('loadedmetadata', onReady, { once: true });
+      video.addEventListener('error', onError, { once: true });
     });
 
     log(
@@ -852,9 +1348,11 @@ async function startCamera() {
     );
 
     await video.play();
+
     log('video.play() 성공', 'ok');
 
     track = stream.getVideoTracks()[0];
+
     running = true;
     locked = false;
     torchOn = false;
@@ -866,6 +1364,7 @@ async function startCamera() {
 
     await populateCameras();
     await tuneCamera();
+
     startDecoder();
 
     setStatus(
@@ -882,6 +1381,7 @@ async function startCamera() {
     );
 
     await cleanupCamera();
+
     starting = false;
     setButtons();
 
@@ -897,9 +1397,14 @@ async function requestFocus() {
 
   caps = getCaps();
 
-  const modes = Array.isArray(caps.focusMode) ? caps.focusMode : [];
+  const modes = Array.isArray(caps.focusMode)
+    ? caps.focusMode
+    : [];
+
   const attempts = modes.length
-    ? modes.filter(mode => mode === 'continuous' || mode === 'single-shot')
+    ? modes.filter(mode =>
+        mode === 'continuous' || mode === 'single-shot'
+      )
     : ['continuous', 'single-shot'];
 
   log(`자동초점 요청: 지원 모드=${safeJson(modes)}`);
@@ -907,11 +1412,13 @@ async function requestFocus() {
   for (const mode of attempts) {
     try {
       await track.applyConstraints({
-        advanced:[{focusMode:mode}]
+        advanced: [{ focusMode: mode }]
       });
 
       log(`초점 모드 요청 적용: ${mode}`, 'ok');
+
       setStatus(`자동초점 ${mode} 모드를 요청했습니다.`, 'ok');
+
       updateInfo();
       return;
 
@@ -934,11 +1441,14 @@ async function toggleTorch() {
 
   try {
     await track.applyConstraints({
-      advanced:[{torch:!torchOn}]
+      advanced: [{ torch: !torchOn }]
     });
 
     torchOn = !torchOn;
-    torchBtn.textContent = torchOn ? '플래시 끄기' : '플래시 켜기';
+
+    torchBtn.textContent = torchOn
+      ? '플래시 끄기'
+      : '플래시 켜기';
 
     log(`플래시 ${torchOn ? '켜짐' : '꺼짐'}`, 'ok');
 
@@ -962,7 +1472,7 @@ async function setZoom() {
 
   try {
     await track.applyConstraints({
-      advanced:[{zoom:Number(zoom.value)}]
+      advanced: [{ zoom: Number(zoom.value) }]
     });
 
     log(`카메라 줌 변경 요청: ${zoom.value}×`, 'ok');
@@ -982,9 +1492,9 @@ async function setManualFocus() {
 
   try {
     await track.applyConstraints({
-      advanced:[{
-        focusMode:'manual',
-        focusDistance:Number(focusDistance.value)
+      advanced: [{
+        focusMode: 'manual',
+        focusDistance: Number(focusDistance.value)
       }]
     });
 
@@ -996,7 +1506,10 @@ async function setManualFocus() {
       'warn'
     );
 
-    setStatus('이 카메라에서는 수동 초점을 적용할 수 없습니다.', 'warn');
+    setStatus(
+      '이 카메라에서는 수동 초점을 적용할 수 없습니다.',
+      'warn'
+    );
   }
 }
 
@@ -1019,7 +1532,9 @@ async function cleanupCamera() {
   scanControls = null;
 
   try {
-    if (reader?.reset) reader.reset();
+    if (reader?.reset) {
+      reader.reset();
+    }
   } catch (_) {}
 
   reader = null;
@@ -1032,8 +1547,12 @@ async function cleanupCamera() {
   track = null;
   video.srcObject = null;
   torchOn = false;
+
   zoomRow.style.display = 'none';
   focusRow.style.display = 'none';
+
+  /* 카메라를 정지하면 팝업도 숨김 */
+  hideSuccessPopup();
 
   return Promise.resolve();
 }
@@ -1042,6 +1561,7 @@ async function stopCamera() {
   log('카메라 중지 요청');
 
   await cleanupCamera();
+
   starting = false;
   setButtons();
 
@@ -1055,6 +1575,7 @@ async function switchCamera() {
   log('카메라 선택 변경: 재시작');
 
   await cleanupCamera();
+
   starting = false;
   setButtons();
 
@@ -1062,7 +1583,9 @@ async function switchCamera() {
 }
 
 function renderHistory() {
-  if (count) count.textContent = records.length + '건';
+  if (count) {
+    count.textContent = records.length + '건';
+  }
 
   csvBtn.disabled = records.length === 0;
   clearBtn.disabled = records.length === 0;
@@ -1075,6 +1598,7 @@ function renderHistory() {
   if (!records.length) {
     history.innerHTML =
       '<tr><td colspan="3" class="muted">아직 기록이 없습니다.</td></tr>';
+
     return;
   }
 
@@ -1085,9 +1609,12 @@ function renderHistory() {
 
     [record.number, record.time, record.code].forEach((value, index) => {
       const td = document.createElement('td');
+
       td.textContent = String(value);
 
-      if (index === 2) td.className = 'code';
+      if (index === 2) {
+        td.className = 'code';
+      }
 
       tr.appendChild(td);
     });
@@ -1110,6 +1637,7 @@ async function copyResult() {
 
   if (await copyText(lastCode)) {
     setStatus('바코드 값을 복사했습니다.', 'ok');
+
   } else {
     setStatus(
       '복사 권한이 없습니다. 결과를 길게 눌러 복사해 주세요.',
@@ -1130,7 +1658,7 @@ async function copyLogs() {
 
   const blob = new Blob(
     [text],
-    {type:'text/plain;charset=utf-8'}
+    { type: 'text/plain;charset=utf-8' }
   );
 
   const url = URL.createObjectURL(blob);
@@ -1158,7 +1686,7 @@ function saveCsv() {
     '"' + String(value).replace(/"/g, '""') + '"';
 
   const rows = [
-    ['번호','인식 시간','바코드 값'],
+    ['번호', '인식 시간', '바코드 값'],
     ...records.map(record => [
       record.number,
       record.time,
@@ -1167,8 +1695,11 @@ function saveCsv() {
   ];
 
   const blob = new Blob(
-    ['\uFEFF' + rows.map(row => row.map(escapeCsv).join(',')).join('\r\n')],
-    {type:'text/csv;charset=utf-8;'}
+    [
+      '\uFEFF' +
+      rows.map(row => row.map(escapeCsv).join(',')).join('\r\n')
+    ],
+    { type: 'text/csv;charset=utf-8;' }
   );
 
   const url = URL.createObjectURL(blob);
@@ -1184,6 +1715,7 @@ function saveCsv() {
   URL.revokeObjectURL(url);
 }
 
+/* 기존 v7.3 이벤트 */
 cameraSelect.addEventListener('change', switchCamera);
 startBtn.addEventListener('click', startCamera);
 stopBtn.addEventListener('click', stopCamera);
@@ -1197,16 +1729,35 @@ copyBtn.addEventListener('click', copyResult);
 csvBtn.addEventListener('click', saveCsv);
 copyLogBtn.addEventListener('click', copyLogs);
 
+/* 기존 다음 바코드 처리 유지 */
 nextBtn.addEventListener('click', () => {
   locked = false;
+
   setButtons();
+
   setStatus('다음 바코드를 가이드 안에 맞춰 보세요.');
+
   log('다음 바코드 대기');
+});
+
+/* 팝업의 다음 바코드 버튼은 기존 다음 버튼을 재사용 */
+popupNextBtn.addEventListener('click', () => {
+  hideSuccessPopup();
+  nextBtn.click();
+});
+
+/*
+ * 닫기는 팝업만 닫습니다.
+ * 다음 바코드를 읽으려면 원래의 '다음 바코드' 버튼을 누릅니다.
+ */
+popupCloseBtn.addEventListener('click', () => {
+  hideSuccessPopup();
 });
 
 clearBtn.addEventListener('click', () => {
   if (confirm('인식 기록을 모두 지울까요?')) {
     records = [];
+
     renderHistory();
     log('인식 기록 초기화');
   }
@@ -1215,14 +1766,18 @@ clearBtn.addEventListener('click', () => {
 clearLogBtn.addEventListener('click', () => {
   logs = [];
   logBox.replaceChildren();
+
   logCount.textContent = '0줄';
+
   log('로그 초기화');
 });
 
 showDebugBtn.addEventListener('click', () => {
   detailedLogs = !detailedLogs;
-  showDebugBtn.textContent =
-    detailedLogs ? '상세 진단 끄기' : '상세 진단 켜기';
+
+  showDebugBtn.textContent = detailedLogs
+    ? '상세 진단 끄기'
+    : '상세 진단 켜기';
 
   log(`상세 진단 ${detailedLogs ? '켜짐' : '꺼짐'}`);
 });
@@ -1243,8 +1798,13 @@ window.addEventListener('unhandledrejection', event => {
 
 window.addEventListener('pagehide', () => {
   try {
-    if (scanControls?.stop) scanControls.stop();
-    if (reader?.reset) reader.reset();
+    if (scanControls?.stop) {
+      scanControls.stop();
+    }
+
+    if (reader?.reset) {
+      reader.reset();
+    }
   } catch (_) {}
 
   if (stream) {
@@ -1256,6 +1816,7 @@ setButtons();
 renderHistory();
 
 log(`페이지 초기화: secureContext=${window.isSecureContext}`);
+
 log(
   `라이브러리 로딩: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`,
   window.ZXing && window.ZXingBrowser ? 'ok' : 'warn'
