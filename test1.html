@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>CODE_128 바코드 스캐너 v7.4</title>
+<title>CODE_128 바코드 테스트 v7.3 - 성공 팝업</title>
 
 <style>
 :root {
@@ -12,19 +12,44 @@
   color: #172033;
   background: #f3f5f8;
 }
-* { box-sizing: border-box; }
-body { margin: 0; line-height: 1.45; }
-main { max-width: 1100px; margin: auto; padding: 12px; }
-h1 { font-size: clamp(23px,5vw,30px); margin: 0 0 5px; }
-h2 { font-size: 17px; margin: 0; }
-.muted { color: #637086; font-size: 13px; }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  line-height: 1.45;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 12px;
+}
+
+h1 {
+  font-size: clamp(23px, 5vw, 30px);
+  margin: 0 0 5px;
+}
+
+h2 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.muted {
+  color: #637086;
+  font-size: 13px;
+}
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0,1.35fr) minmax(260px,.85fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .85fr);
   gap: 12px;
   align-items: start;
 }
+
 .panel {
   background: #fff;
   border: 1px solid #dce2ea;
@@ -33,6 +58,7 @@ h2 { font-size: 17px; margin: 0; }
   margin-top: 12px;
   min-width: 0;
 }
+
 .heading {
   display: flex;
   align-items: center;
@@ -40,6 +66,7 @@ h2 { font-size: 17px; margin: 0; }
   gap: 10px;
   margin-bottom: 10px;
 }
+
 .tag {
   font-size: 12px;
   padding: 4px 9px;
@@ -47,12 +74,17 @@ h2 { font-size: 17px; margin: 0; }
   background: #edf1f6;
   color: #536176;
 }
-.tag.good { background: #e8f6ee; color: #157347; }
 
+.tag.good {
+  background: #e8f6ee;
+  color: #157347;
+}
+
+/* 가로형 카메라 화면 */
 #videoWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   min-height: 180px;
   max-height: 280px;
   background: #101722;
@@ -61,14 +93,18 @@ h2 { font-size: 17px; margin: 0; }
   overflow: hidden;
   touch-action: manipulation;
 }
+
 #video {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   background: #101722;
+  touch-action: manipulation;
 }
+
 #guide {
   position: absolute;
   left: 5%;
@@ -77,11 +113,13 @@ h2 { font-size: 17px; margin: 0; }
   height: 60%;
   border: 2px solid #35d07f;
   border-radius: 5px;
-  box-shadow: 0 0 0 999px rgba(0,0,0,.12);
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, .12);
   pointer-events: none;
   z-index: 2;
 }
-#guide:before,#guide:after {
+
+#guide:before,
+#guide:after {
   content: "";
   position: absolute;
   width: 18px;
@@ -89,25 +127,29 @@ h2 { font-size: 17px; margin: 0; }
   border-color: #fff;
   border-style: solid;
 }
+
 #guide:before {
   top: -2px;
   left: -2px;
   border-width: 4px 0 0 4px;
 }
+
 #guide:after {
   right: -2px;
   bottom: -2px;
   border-width: 0 4px 4px 0;
 }
+
 #scanLine {
   position: absolute;
   left: 2%;
   right: 2%;
   top: 50%;
   height: 1px;
-  background: rgba(255,80,80,.9);
+  background: rgba(255, 80, 80, .9);
   box-shadow: 0 0 4px #f33;
 }
+
 #guideLabel {
   position: absolute;
   top: -23px;
@@ -125,7 +167,9 @@ h2 { font-size: 17px; margin: 0; }
   gap: 7px;
   margin-top: 10px;
 }
-button, select, input[type="text"] {
+
+button,
+select {
   min-height: 41px;
   border: 1px solid #cfd6e0;
   border-radius: 9px;
@@ -134,27 +178,35 @@ button, select, input[type="text"] {
   color: #172033;
   font: inherit;
 }
-button { font-weight: 700; cursor: pointer; }
+
+button {
+  font-weight: 700;
+  cursor: pointer;
+}
+
 button.primary {
   color: #fff;
   background: #1769e0;
   border-color: #1769e0;
 }
-button.active {
-  color: #fff;
-  background: #a45a00;
-  border-color: #a45a00;
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
 }
-button:disabled { opacity: .45; cursor: not-allowed; }
 
 .selectrow {
   display: grid;
-  grid-template-columns: 85px minmax(0,1fr);
+  grid-template-columns: 75px 1fr;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
 }
-.selectrow select,.selectrow input { width: 100%; min-width: 0; }
+
+.selectrow select {
+  width: 100%;
+  min-width: 0;
+}
 
 .status {
   padding: 9px 11px;
@@ -164,26 +216,44 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   font-size: 13px;
   margin-top: 10px;
 }
-.status.ok { color: #157347; background: #e8f6ee; }
-.status.warn { color: #8a5400; background: #fff3d8; }
-.status.err { color: #b42318; background: #ffebe9; }
+
+.status.ok {
+  color: #157347;
+  background: #e8f6ee;
+}
+
+.status.warn {
+  color: #8a5400;
+  background: #fff3d8;
+}
+
+.status.err {
+  color: #b42318;
+  background: #ffebe9;
+}
 
 .result {
-  font-size: clamp(22px,5vw,29px);
+  font-size: clamp(22px, 5vw, 29px);
   font-weight: 800;
   overflow-wrap: anywhere;
   word-break: break-word;
   padding: 8px 0 2px;
 }
+
 .sliderrow {
   display: none;
-  grid-template-columns: 85px minmax(0,1fr) 52px;
+  grid-template-columns: 85px 1fr 52px;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
   font-size: 13px;
 }
-.sliderrow input { width: 100%; min-width: 0; }
+
+.sliderrow input {
+  width: 100%;
+  min-width: 0;
+}
+
 .hint {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -193,17 +263,30 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   color: #526176;
   margin-top: 9px;
 }
-#qualityInfo {
-  padding: 8px 10px;
-  margin-top: 8px;
-  background: #f4f7fb;
-  border-radius: 8px;
-  overflow-wrap: anywhere;
+
+#logPanel {
+  position: sticky;
+  top: 10px;
 }
-#logPanel { position: sticky; top: 10px; }
-.log-tools { display: flex; gap: 6px; flex-wrap: wrap; }
-.log-tools button { min-height: 34px; font-size: 12px; padding: 5px 8px; }
-.log-meta { font-size: 12px; color: #637086; margin: 8px 0; }
+
+.log-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.log-tools button {
+  min-height: 34px;
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.log-meta {
+  font-size: 12px;
+  color: #637086;
+  margin: 8px 0;
+}
+
 #logBox {
   height: 330px;
   overflow: auto;
@@ -211,30 +294,67 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   color: #d9e4f5;
   border-radius: 9px;
   padding: 8px;
-  font: 11px/1.45 ui-monospace,Consolas,monospace;
+  font: 11px/1.45 ui-monospace, Consolas, monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
-.logline { padding: 3px 0; border-bottom: 1px solid #223047; }
-.logline.err { color: #ffaaa5; }
-.logline.warn { color: #ffd580; }
-.logline.ok { color: #91f2b1; }
-.logline.info { color: #c4d7ff; }
 
-.tablewrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th,td {
+.logline {
+  padding: 3px 0;
+  border-bottom: 1px solid #223047;
+}
+
+.logline.err {
+  color: #ffaaa5;
+}
+
+.logline.warn {
+  color: #ffd580;
+}
+
+.logline.ok {
+  color: #91f2b1;
+}
+
+.logline.info {
+  color: #c4d7ff;
+}
+
+.tablewrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
   text-align: left;
   padding: 8px 7px;
   border-bottom: 1px solid #e2e7ef;
   vertical-align: top;
 }
-th { color: #637086; white-space: nowrap; }
-td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
-#testSummary { line-height: 1.6; }
 
-#successPopup[hidden] { display: none !important; }
+th {
+  color: #637086;
+  white-space: nowrap;
+}
+
+td.code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-weight: 700;
+}
+
+/* 바코드 인식 성공 팝업 */
+#successPopup[hidden] {
+  display: none !important;
+}
+
 #successPopup {
   position: fixed;
   inset: 0;
@@ -243,18 +363,20 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0,0,0,.65);
+  background: rgba(0, 0, 0, .65);
 }
-.popup-card {
+
+#successPopup .popup-card {
   width: 100%;
   max-width: 380px;
   padding: 24px 18px 18px;
   border-radius: 16px;
   background: #fff;
   text-align: center;
-  box-shadow: 0 12px 40px rgba(0,0,0,.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
 }
-.popup-icon {
+
+#successPopup .popup-icon {
   display: flex;
   width: 56px;
   height: 56px;
@@ -267,48 +389,91 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
   font-size: 32px;
   font-weight: 800;
 }
-.popup-title { margin: 0 0 8px; font-size: 22px; }
-.popup-message { margin: 0 0 12px; color: #637086; font-size: 13px; }
-.popup-code {
+
+#successPopup .popup-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+#successPopup .popup-message {
+  margin: 0 0 12px;
+  color: #637086;
+  font-size: 13px;
+}
+
+#successPopup .popup-code {
   padding: 14px 10px;
   margin-bottom: 17px;
   border: 1px solid #dce6f5;
   border-radius: 10px;
   background: #f0f5fc;
   color: #172033;
-  font-family: ui-monospace,Consolas,monospace;
+  font-family: ui-monospace, Consolas, monospace;
   font-size: 23px;
   font-weight: 800;
   overflow-wrap: anywhere;
   word-break: break-word;
   user-select: text;
 }
-.popup-buttons { display: flex; gap: 8px; }
-.popup-buttons button { flex: 1; min-height: 44px; }
+
+#successPopup .popup-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#successPopup .popup-buttons button {
+  flex: 1;
+  min-height: 44px;
+}
+
 #popupNextBtn {
   color: #fff;
   background: #1769e0;
   border-color: #1769e0;
 }
 
+#popupCloseBtn {
+  color: #172033;
+  background: #edf1f6;
+}
+
 @media(max-width:680px) {
-  main { padding: 10px; }
-  .layout { grid-template-columns: minmax(0,1fr); }
-  #videoWrap { min-height: 180px; max-height: 235px; }
-  #logPanel { position: static; }
-  #logBox { height: 220px; }
-  .panel { padding: 11px; }
+  main {
+    padding: 10px;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #videoWrap {
+    min-height: 180px;
+    max-height: 235px;
+  }
+
+  #logPanel {
+    position: static;
+  }
+
+  #logBox {
+    height: 220px;
+  }
+
+  .panel {
+    padding: 11px;
+  }
 }
 </style>
 
+<!-- 기존 v7.3 라이브러리 유지 -->
 <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
 <script src="https://unpkg.com/@zxing/browser@0.2.1/umd/zxing-browser.min.js"></script>
 </head>
 
 <body>
 <main>
-<h1>바코드 스캔 테스트 v7.4</h1>
-<p class="muted">CODE_128 전용 · 저조도 보정 · 인식률 측정</p>
+<h1>바코드 스캔 테스트 v7.3</h1>
+<p class="muted">CODE_128 전용 · 가로형 화면 · 단계별 카메라/인식 로그</p>
 
 <div class="layout">
 
@@ -320,6 +485,7 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
 
   <div id="videoWrap">
     <video id="video" autoplay muted playsinline></video>
+
     <div id="guide">
       <span id="guideLabel">바코드를 가이드 안에 맞추세요</span>
       <div id="scanLine"></div>
@@ -333,39 +499,18 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
     </select>
   </div>
 
-  <div class="selectrow">
-    <label for="testCondition">시험 조건</label>
-    <select id="testCondition">
-      <option>일반 밝기</option>
-      <option>어두운 곳 · 플래시 끔</option>
-      <option>어두운 곳 · 플래시 켬</option>
-      <option>좁은 공간 · 각도 제한</option>
-      <option>반사 또는 훼손된 라벨</option>
-      <option>작은 바코드 · 근접 스캔</option>
-    </select>
-  </div>
-
-  <div class="selectrow">
-    <label for="expectedCode">예상 바코드</label>
-    <input id="expectedCode" type="text"
-           placeholder="정답 번호 입력 (예: 201811000026)">
-  </div>
-
   <div class="hint">
-    시험 조건과 예상 번호를 먼저 입력하세요. 예상 번호를 입력하면
-    실제 인식값이 정답과 일치하는지도 기록합니다.<br>
-    반사가 심한 라벨은 플래시를 켰을 때 오히려 읽기 어려울 수 있으므로
-    플래시 끔/켬을 각각 시험해 보세요.
+    가이드선은 위치 안내용이며 가이드 밖도 인식합니다.
+    약 15~25cm 거리에서 바코드를 수평으로 맞춰 보세요.
+    카메라 설정과 실제 영상 해상도는 아래 로그에서 확인할 수 있습니다.
   </div>
 
   <div class="buttons">
     <button id="startBtn" class="primary">카메라 시작</button>
     <button id="focusBtn" disabled>자동초점 요청</button>
     <button id="torchBtn" disabled>플래시 켜기</button>
-    <button id="lowLightBtn" disabled>저조도 보정 켜기</button>
     <button id="stopBtn" disabled>중지</button>
-    <button id="nextBtn" disabled>다음 시도</button>
-    <button id="failBtn" disabled>미인식 기록</button>
+    <button id="nextBtn" disabled>다음 바코드</button>
   </div>
 
   <div id="zoomRow" class="sliderrow">
@@ -381,7 +526,6 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
   </div>
 
   <p id="cameraInfo" class="muted">카메라 시작 후 정보가 표시됩니다.</p>
-  <p id="qualityInfo" class="muted">가이드 영역 밝기 측정 대기 중</p>
 
   <div id="status" class="status" role="status" aria-live="polite">
     카메라 시작을 눌러 주세요.
@@ -393,31 +537,29 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
 
   <div class="buttons">
     <button id="copyBtn" disabled>결과 복사</button>
-    <button id="csvBtn" disabled>시험 기록 CSV 저장</button>
+    <button id="csvBtn" disabled>CSV 저장</button>
     <button id="clearBtn" disabled>기록 지우기</button>
   </div>
 
   <div class="heading" style="margin-top:13px">
-    <h2>스캔 시험 기록</h2>
-    <span id="count" class="tag">0회</span>
+    <h2>인식 기록</h2>
+    <span id="count" class="tag">0건</span>
   </div>
-
-  <p id="testSummary" class="muted">시험 기록이 없습니다.</p>
 
   <div class="tablewrap">
     <table>
       <thead>
         <tr>
           <th>번호</th>
-          <th>조건</th>
-          <th>소요시간</th>
-          <th>예상값</th>
-          <th>실제값</th>
-          <th>결과</th>
+          <th>시간</th>
+          <th>바코드</th>
         </tr>
       </thead>
+
       <tbody id="history">
-        <tr><td colspan="6" class="muted">아직 기록이 없습니다.</td></tr>
+        <tr>
+          <td colspan="3" class="muted">아직 기록이 없습니다.</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -439,25 +581,34 @@ td.code { overflow-wrap: anywhere; word-break: break-word; font-weight: 700; }
   <div id="logBox" aria-live="polite"></div>
 
   <p class="muted">
-    인식이 안 되면 5~10초 기다린 뒤 미인식 기록을 누르세요.
-    로그를 복사해 주시면 어떤 조건에서 실패하는지 비교할 수 있습니다.
+    인식 실패 시 5~10초 기다린 다음 로그 복사 버튼을 눌러 보내 주세요.
   </p>
 </section>
 
 </div>
 </main>
 
-<!-- 성공 팝업: 실제 바코드 결과가 반환될 때만 표시 -->
+<!-- 실제 바코드 인식에 성공한 경우에만 표시 -->
 <div id="successPopup" hidden>
   <div class="popup-card">
     <div class="popup-icon">✓</div>
-    <h2 id="popupTitle" class="popup-title">인식 성공</h2>
-    <p id="popupMessage" class="popup-message"></p>
+
+    <h2 class="popup-title">인식 성공</h2>
+
+    <p id="popupMessage" class="popup-message">
+      바코드를 정상적으로 읽었습니다.
+    </p>
+
     <div id="popupCode" class="popup-code"></div>
 
     <div class="popup-buttons">
-      <button id="popupNextBtn" type="button">다음 시도</button>
-      <button id="popupCloseBtn" type="button">닫기</button>
+      <button id="popupNextBtn" type="button">
+        다음 바코드
+      </button>
+
+      <button id="popupCloseBtn" type="button">
+        닫기
+      </button>
     </div>
   </div>
 </div>
@@ -472,22 +623,18 @@ const video = $('video');
 const badge = $('badge');
 const statusEl = $('status');
 const cameraInfo = $('cameraInfo');
-const qualityInfo = $('qualityInfo');
 const cameraSelect = $('cameraSelect');
-const testCondition = $('testCondition');
-const expectedCodeInput = $('expectedCode');
 
 const startBtn = $('startBtn');
 const stopBtn = $('stopBtn');
 const focusBtn = $('focusBtn');
 const torchBtn = $('torchBtn');
-const lowLightBtn = $('lowLightBtn');
 const nextBtn = $('nextBtn');
-const failBtn = $('failBtn');
 
 const zoomRow = $('zoomRow');
 const zoom = $('zoom');
 const zoomText = $('zoomText');
+
 const focusRow = $('focusRow');
 const focusDistance = $('focusDistance');
 const focusText = $('focusText');
@@ -499,7 +646,6 @@ const csvBtn = $('csvBtn');
 const clearBtn = $('clearBtn');
 const history = $('history');
 const count = $('count');
-const testSummary = $('testSummary');
 
 const logBox = $('logBox');
 const logCount = $('logCount');
@@ -508,8 +654,8 @@ const copyLogBtn = $('copyLogBtn');
 const clearLogBtn = $('clearLogBtn');
 const showDebugBtn = $('showDebugBtn');
 
+/* 팝업 요소 */
 const successPopup = $('successPopup');
-const popupTitle = $('popupTitle');
 const popupMessage = $('popupMessage');
 const popupCode = $('popupCode');
 const popupNextBtn = $('popupNextBtn');
@@ -519,12 +665,10 @@ let stream = null;
 let track = null;
 let reader = null;
 let scanControls = null;
-
 let running = false;
 let starting = false;
 let locked = false;
 let torchOn = false;
-let lowLightEnabled = false;
 let lastCode = '';
 
 let records = [];
@@ -538,21 +682,59 @@ let otherDecodeErrors = 0;
 let lastSummaryAt = 0;
 let lastOtherError = '';
 let pendingCameraTimer = null;
-let qualityTimer = null;
-let qualityCanvas = null;
-let qualityContext = null;
-
-let attemptStartedAt = 0;
-let currentCondition = '';
-let currentExpected = '';
-let initialCameraSettings = {};
 
 const MAX_LOGS = 180;
 
+/* 팝업 숨기기 */
+function hideSuccessPopup() {
+  successPopup.hidden = true;
+}
+
+/*
+ * 성공 팝업 표시.
+ * 실제 디코딩된 코드가 있을 때만 호출합니다.
+ */
+function showSuccessPopup(code, format) {
+  const value = String(code || '').trim();
+
+  if (!value) {
+    return;
+  }
+
+  popupCode.textContent = value;
+
+  let formatName = 'CODE_128';
+
+  try {
+    const formats = window.ZXing && window.ZXing.BarcodeFormat;
+
+    if (formats) {
+      const found = Object.entries(formats).find(([name, enumValue]) =>
+        !/^\d+$/.test(name) && enumValue === format
+      );
+
+      if (found) {
+        formatName = found[0];
+      }
+    }
+  } catch (_) {
+    /* 형식명을 찾지 못해도 인식된 코드 자체는 표시 */
+  }
+
+  popupMessage.textContent = '바코드 형식: ' + formatName;
+
+  successPopup.hidden = false;
+}
+
 function setStatus(message, type = '') {
-  statusEl.textContent = message;
-  statusEl.className = 'status' + (type ? ' ' + type : '');
-  logSummary.textContent = message;
+  if (statusEl) {
+    statusEl.textContent = message;
+    statusEl.className = 'status' + (type ? ' ' + type : '');
+  }
+
+  if (logSummary) {
+    logSummary.textContent = message;
+  }
 }
 
 function log(message, level = 'info') {
@@ -560,22 +742,33 @@ function log(message, level = 'info') {
     hour12: false
   });
 
-  logs.push({ time, level, message: String(message) });
+  logs.push({
+    time,
+    level,
+    message: String(message)
+  });
 
-  if (logs.length > MAX_LOGS) logs.shift();
-
-  const line = document.createElement('div');
-  line.className = 'logline ' + level;
-  line.textContent = `[${time}] ${level.toUpperCase()} ${message}`;
-
-  logBox.appendChild(line);
-
-  while (logBox.children.length > MAX_LOGS) {
-    logBox.removeChild(logBox.firstChild);
+  if (logs.length > MAX_LOGS) {
+    logs.shift();
   }
 
-  logBox.scrollTop = logBox.scrollHeight;
-  logCount.textContent = logs.length + '줄';
+  if (logBox) {
+    const line = document.createElement('div');
+    line.className = 'logline ' + level;
+    line.textContent = `[${time}] ${level.toUpperCase()} ${message}`;
+
+    logBox.appendChild(line);
+
+    while (logBox.children.length > MAX_LOGS) {
+      logBox.removeChild(logBox.firstChild);
+    }
+
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  if (logCount) {
+    logCount.textContent = logs.length + '줄';
+  }
 }
 
 function setButtons() {
@@ -583,9 +776,7 @@ function setButtons() {
   stopBtn.disabled = !running;
   focusBtn.disabled = !running;
   torchBtn.disabled = !running;
-  lowLightBtn.disabled = !running;
   nextBtn.disabled = !running || !locked;
-  failBtn.disabled = !running || locked;
 
   badge.textContent = running
     ? '카메라 실행 중'
@@ -594,16 +785,12 @@ function setButtons() {
       : '준비/중지';
 
   badge.className = 'tag' + (running ? ' good' : '');
-
-  lowLightBtn.textContent = lowLightEnabled
-    ? '저조도 보정 끄기'
-    : '저조도 보정 켜기';
-
-  lowLightBtn.classList.toggle('active', lowLightEnabled);
 }
 
 function timeText(date = new Date()) {
-  return date.toLocaleString('ko-KR', { hour12: false });
+  return date.toLocaleString('ko-KR', {
+    hour12: false
+  });
 }
 
 function safeJson(value) {
@@ -624,24 +811,8 @@ function getCaps() {
   }
 }
 
-function elapsedSeconds() {
-  if (!attemptStartedAt) return 0;
-  return Math.max(0, (performance.now() - attemptStartedAt) / 1000);
-}
-
-function beginAttempt() {
-  attemptStartedAt = performance.now();
-  currentCondition = testCondition.value;
-  currentExpected = expectedCodeInput.value.trim();
-
-  log(
-    `새 시험 시작: 조건=${currentCondition}, ` +
-    `예상값=${currentExpected || '(미입력)'}`
-  );
-}
-
 /*
- * 카메라 권한 요청 대기 상태도 로그에 남깁니다.
+ * getUserMedia 단계가 오래 걸리는지도 로그에 남깁니다.
  */
 async function requestCameraWithLog(constraints, label) {
   log(`${label}: getUserMedia 호출`);
@@ -650,11 +821,14 @@ async function requestCameraWithLog(constraints, label) {
   pendingCameraTimer = setTimeout(() => {
     if (!completed) {
       log(
-        '카메라 요청이 8초 넘게 대기 중입니다. 권한 팝업 또는 카메라 점유 여부를 확인하세요.',
+        '카메라 요청이 8초 넘게 대기 중입니다. 권한 팝업, 카메라 점유 여부를 확인하세요.',
         'warn'
       );
 
-      setStatus('카메라 응답 대기 중입니다. 브라우저 권한을 확인하세요.', 'warn');
+      setStatus(
+        '카메라 권한/장치 응답을 기다리는 중입니다. 브라우저 권한을 확인하세요.',
+        'warn'
+      );
     }
   }, 8000);
 
@@ -711,7 +885,7 @@ function updateInfo() {
     settings.width < settings.height
   ) {
     log(
-      '주의: 원본 카메라 영상이 세로 비율입니다. 화면 창은 가로형이지만 원본 비율은 다릅니다.',
+      '주의: 실제 카메라 영상은 세로 비율입니다. 화면 창은 가로형이지만 원본 비율은 다릅니다.',
       'warn'
     );
   }
@@ -735,6 +909,7 @@ async function populateCameras() {
 
     devices.forEach((device, index) => {
       const option = document.createElement('option');
+
       option.value = device.deviceId;
       option.textContent = device.label || `카메라 ${index + 1}`;
 
@@ -796,36 +971,12 @@ function buildReader() {
   );
 
   log('ZXing 인식기 생성 성공', 'ok');
+
   log(
     `디코더 설정: CODE_128=${ZXing.BarcodeFormat.CODE_128}, TRY_HARDER=true`
   );
 }
 
-async function applyOneConstraint(name, value, label) {
-  if (!track || !track.applyConstraints) return false;
-
-  try {
-    await track.applyConstraints({
-      advanced: [{ [name]: value }]
-    });
-
-    log(`${label} 적용 요청: ${name}=${value}`, 'ok');
-    return true;
-
-  } catch (error) {
-    log(
-      `${label} 적용 실패: ${name}=${value} · ${error.name || ''} ${error.message || error}`,
-      'warn'
-    );
-
-    return false;
-  }
-}
-
-/*
- * 자동초점과 기본 화질 설정.
- * 기존 v7.3의 카메라 및 ZXing 인식 흐름은 변경하지 않습니다.
- */
 async function tuneCamera() {
   if (!track) return;
 
@@ -847,15 +998,31 @@ async function tuneCamera() {
     );
   }
 
-  caps = getCaps();
+  try {
+    caps = getCaps();
 
-  if (
-    Array.isArray(caps.focusMode) &&
-    caps.focusMode.includes('continuous')
-  ) {
-    await applyOneConstraint('focusMode', 'continuous', '연속 자동초점');
-  } else {
-    log('연속 자동초점 모드를 직접 설정할 수 없습니다. 기본 카메라 설정을 사용합니다.', 'warn');
+    if (
+      Array.isArray(caps.focusMode) &&
+      caps.focusMode.includes('continuous')
+    ) {
+      await track.applyConstraints({
+        advanced: [{ focusMode: 'continuous' }]
+      });
+
+      log('연속 자동초점 요청 완료', 'ok');
+
+    } else {
+      log(
+        '초점 모드 목록이 제공되지 않아 기본 카메라 자동초점을 사용합니다.',
+        'warn'
+      );
+    }
+
+  } catch (error) {
+    log(
+      `자동초점 요청 실패: ${error.name || ''} ${error.message || error}`,
+      'warn'
+    );
   }
 
   caps = getCaps();
@@ -911,283 +1078,19 @@ async function tuneCamera() {
 
   updateInfo();
 
-  log(`실제 카메라 설정: ${safeJson(track.getSettings ? track.getSettings() : {})}`);
+  log(`실제 카메라 설정: ${safeJson(settings)}`);
 
   log(`카메라 지원 기능: ${safeJson({
     focusMode: caps.focusMode,
     focusDistance: caps.focusDistance,
     zoom: caps.zoom,
-    torch: caps.torch,
-    exposureMode: caps.exposureMode,
-    exposureCompensation: caps.exposureCompensation,
-    whiteBalanceMode: caps.whiteBalanceMode
+    torch: caps.torch
   })}`);
 }
 
 /*
- * 저조도 보정:
- * 플래시를 자동으로 켜지는 않습니다.
- * 지원되는 카메라에 대해서만 노출·화이트밸런스·초점 설정을 요청합니다.
- */
-async function toggleLowLight() {
-  if (!running || !track) return;
-
-  lowLightEnabled = !lowLightEnabled;
-  setButtons();
-
-  caps = getCaps();
-
-  if (lowLightEnabled) {
-    log('===== 저조도 보정 켜기 =====');
-
-    let applied = 0;
-
-    if (
-      Array.isArray(caps.exposureMode) &&
-      caps.exposureMode.includes('continuous')
-    ) {
-      if (await applyOneConstraint('exposureMode', 'continuous', '자동 노출')) {
-        applied++;
-      }
-    } else {
-      log('자동 노출 모드를 직접 제어할 수 없습니다.', 'warn');
-    }
-
-    caps = getCaps();
-
-    if (
-      Array.isArray(caps.whiteBalanceMode) &&
-      caps.whiteBalanceMode.includes('continuous')
-    ) {
-      if (await applyOneConstraint('whiteBalanceMode', 'continuous', '자동 화이트밸런스')) {
-        applied++;
-      }
-    } else {
-      log('화이트밸런스 모드를 직접 제어할 수 없습니다.', 'warn');
-    }
-
-    caps = getCaps();
-
-    if (
-      Array.isArray(caps.focusMode) &&
-      caps.focusMode.includes('continuous')
-    ) {
-      if (await applyOneConstraint('focusMode', 'continuous', '연속 자동초점')) {
-        applied++;
-      }
-    }
-
-    /*
-     * 노출 보정 지원 시 약 +1 단계 수준을 요청합니다.
-     * 기기가 지원하는 범위 안에서만 적용합니다.
-     */
-    caps = getCaps();
-
-    const exp = caps.exposureCompensation;
-
-    if (
-      exp &&
-      Number.isFinite(exp.min) &&
-      Number.isFinite(exp.max) &&
-      exp.max > exp.min
-    ) {
-      let target = Math.min(exp.max, Math.max(exp.min, 1));
-
-      if (Number.isFinite(exp.step) && exp.step > 0) {
-        target = exp.min +
-          Math.round((target - exp.min) / exp.step) * exp.step;
-      }
-
-      target = Math.min(exp.max, Math.max(exp.min, target));
-
-      if (await applyOneConstraint(
-        'exposureCompensation',
-        target,
-        '노출 보정'
-      )) {
-        applied++;
-      }
-
-    } else {
-      log('이 카메라에서는 노출 보정 범위를 제공하지 않습니다.', 'warn');
-    }
-
-    updateInfo();
-
-    setStatus(
-      `저조도 보정 요청 완료 · 적용 성공 ${applied}개 · 플래시는 별도 설정`,
-      'ok'
-    );
-
-    log(`저조도 보정 완료. 적용 요청 성공 ${applied}개`, 'ok');
-
-  } else {
-    log('===== 저조도 보정 끄기 =====');
-
-    /*
-     * 보정 전에 노출 보정값이 있었다면 원래 값으로 되돌립니다.
-     */
-    caps = getCaps();
-
-    const exp = caps.exposureCompensation;
-    const original = initialCameraSettings.exposureCompensation;
-
-    if (
-      exp &&
-      Number.isFinite(exp.min) &&
-      Number.isFinite(exp.max)
-    ) {
-      let target = Number.isFinite(original) ? original : 0;
-
-      target = Math.min(exp.max, Math.max(exp.min, target));
-
-      await applyOneConstraint(
-        'exposureCompensation',
-        target,
-        '원래 노출 보정 복원'
-      );
-    }
-
-    /*
-     * 자동 노출·자동 초점은 일반 스캔에도 유용하므로
-     * 연속 자동 모드를 유지합니다.
-     */
-    caps = getCaps();
-
-    if (Array.isArray(caps.exposureMode) &&
-        caps.exposureMode.includes('continuous')) {
-      await applyOneConstraint('exposureMode', 'continuous', '자동 노출');
-    }
-
-    caps = getCaps();
-
-    if (Array.isArray(caps.focusMode) &&
-        caps.focusMode.includes('continuous')) {
-      await applyOneConstraint('focusMode', 'continuous', '연속 자동초점');
-    }
-
-    updateInfo();
-    setStatus('저조도 보정을 끄고 기본 스캔 설정으로 돌아왔습니다.');
-  }
-
-  setButtons();
-}
-
-/*
- * 가이드 영역의 평균 밝기와 밝기 편차를 1.5초마다 측정합니다.
- * 실제 디코더에 입력되는 원본 영상은 가공하지 않습니다.
- */
-function startQualityMonitor() {
-  stopQualityMonitor();
-
-  qualityCanvas = document.createElement('canvas');
-  qualityCanvas.width = 160;
-  qualityCanvas.height = 90;
-  qualityContext = qualityCanvas.getContext('2d', {
-    willReadFrequently: true
-  });
-
-  qualityTimer = setInterval(measureVideoQuality, 1500);
-  measureVideoQuality();
-}
-
-function stopQualityMonitor() {
-  if (qualityTimer) {
-    clearInterval(qualityTimer);
-    qualityTimer = null;
-  }
-
-  qualityCanvas = null;
-  qualityContext = null;
-}
-
-function measureVideoQuality() {
-  if (
-    !running ||
-    !video.videoWidth ||
-    !video.videoHeight ||
-    video.readyState < 2 ||
-    !qualityCanvas ||
-    !qualityContext
-  ) {
-    return;
-  }
-
-  try {
-    const w = video.videoWidth;
-    const h = video.videoHeight;
-
-    // 안내 가이드와 비슷한 중앙 영역을 측정합니다.
-    const sx = w * 0.05;
-    const sy = h * 0.20;
-    const sw = w * 0.90;
-    const sh = h * 0.60;
-
-    qualityContext.drawImage(
-      video,
-      sx, sy, sw, sh,
-      0, 0,
-      qualityCanvas.width,
-      qualityCanvas.height
-    );
-
-    const image = qualityContext.getImageData(
-      0, 0,
-      qualityCanvas.width,
-      qualityCanvas.height
-    );
-
-    const data = image.data;
-    let total = 0;
-    let totalSq = 0;
-    let pixels = 0;
-
-    for (let i = 0; i < data.length; i += 4) {
-      const luma =
-        0.2126 * data[i] +
-        0.7152 * data[i + 1] +
-        0.0722 * data[i + 2];
-
-      total += luma;
-      totalSq += luma * luma;
-      pixels++;
-    }
-
-    const average = total / pixels;
-    const variance = Math.max(0, totalSq / pixels - average * average);
-    const spread = Math.sqrt(variance);
-
-    let brightnessLabel = '밝기 양호';
-
-    if (average < 40) {
-      brightnessLabel = '매우 어두움';
-    } else if (average < 65) {
-      brightnessLabel = '어두운 편';
-    } else if (average < 90) {
-      brightnessLabel = '다소 어두움';
-    }
-
-    let contrastLabel = '명암 차이 확인';
-
-    if (spread < 18) {
-      contrastLabel = '명암 차이가 작음';
-    } else if (spread > 50) {
-      contrastLabel = '명암 차이가 큼';
-    }
-
-    qualityInfo.textContent =
-      `가이드 영상 밝기 ${average.toFixed(0)}/255 · ` +
-      `명암 지표 ${spread.toFixed(0)} · ` +
-      `${brightnessLabel} · ${contrastLabel}`;
-
-  } catch (error) {
-    qualityInfo.textContent = '영상 밝기 측정이 이 브라우저에서 제한됩니다.';
-  }
-}
-
-/*
- * 원래 v7.3의 ZXing 연속 인식 흐름을 유지합니다.
- * 실패 콜백에서는 팝업을 호출하지 않습니다.
+ * 중요: 보내주신 v7.3의 인식 방식을 그대로 유지했습니다.
+ * 성공 결과가 있을 때만 onBarcode()를 실행합니다.
  */
 function startDecoder() {
   try {
@@ -1242,6 +1145,7 @@ function startDecoder() {
 
         } else if (`${name}:${message}` !== lastOtherError) {
           lastOtherError = `${name}:${message}`;
+
           log(`디코더 예외 ${name}: ${message}`, 'err');
         }
       }
@@ -1260,9 +1164,11 @@ function startDecoder() {
       if (reader === activeReader && running) {
         scanControls = controls;
         log('ZXing 연속 인식 루프 실행 중', 'ok');
+
       } else {
         controls.stop();
       }
+
     }).catch(error => {
       log(
         `디코딩 시작 실패: ${error.name || ''} ${error.message || error}`,
@@ -1282,149 +1188,49 @@ function startDecoder() {
   }
 }
 
-function showSuccessPopup(code, format, outcome, elapsed) {
-  const value = String(code || '').trim();
-
-  if (!value) return;
-
-  popupCode.textContent = value;
-
-  if (outcome === '정확') {
-    popupTitle.textContent = '정답 일치';
-    popupMessage.textContent =
-      `정상 인식 · ${formatName(format)} · ${elapsed.toFixed(2)}초`;
-
-  } else if (outcome === '오인식') {
-    popupTitle.textContent = '인식값 확인 필요';
-    popupMessage.textContent =
-      `예상값과 다릅니다 · ${formatName(format)} · ${elapsed.toFixed(2)}초`;
-
-  } else {
-    popupTitle.textContent = '인식 성공';
-    popupMessage.textContent =
-      `${formatName(format)} · ${elapsed.toFixed(2)}초 · 정답 미입력`;
-  }
-
-  successPopup.hidden = false;
-}
-
-function formatName(format) {
-  try {
-    const formats = window.ZXing && window.ZXing.BarcodeFormat;
-
-    if (formats) {
-      const found = Object.entries(formats).find(([name, value]) =>
-        !/^\d+$/.test(name) && value === format
-      );
-
-      if (found) return found[0];
-    }
-  } catch (_) {}
-
-  return 'CODE_128';
-}
-
 /*
- * 인식 성공 시에만 결과를 기록하고 성공 팝업을 표시합니다.
+ * 실제 바코드 인식 성공 시 호출됩니다.
+ * 팝업은 이 함수의 마지막에서만 표시합니다.
  */
 function onBarcode(code, format) {
   if (locked || !running) return;
-  if (code == null || String(code).trim() === '') return;
 
-  locked = true;
-
-  const actual = String(code).trim();
-  lastCode = actual;
-
-  const expected = currentExpected;
-  const elapsed = elapsedSeconds();
-
-  let outcome;
-
-  if (!expected) {
-    outcome = '판독 성공(정답 미입력)';
-  } else {
-    outcome = actual === expected ? '정확' : '오인식';
+  if (code == null || String(code).trim() === '') {
+    return;
   }
 
-  const record = {
+  locked = true;
+  lastCode = String(code);
+
+  const now = new Date();
+
+  records.push({
     number: records.length + 1,
-    time: timeText(),
-    condition: currentCondition,
-    expected,
-    actualCode: actual,
-    outcome,
-    seconds: elapsed
-  };
+    time: timeText(now),
+    code: lastCode
+  });
 
-  records.push(record);
+  lastResult.textContent = lastCode;
 
-  lastResult.textContent = actual;
   lastMeta.textContent =
-    `인식 시간: ${record.time} · 형식: ${formatName(format)} · ` +
-    `소요 시간: ${elapsed.toFixed(2)}초 · 결과: ${outcome}`;
+    `인식 시간: ${timeText(now)} · 형식: ${format || 'CODE_128'}`;
 
   copyBtn.disabled = false;
 
   renderHistory();
   setButtons();
 
-  if (outcome === '오인식') {
-    setStatus(
-      `바코드는 읽었지만 예상값(${expected})과 다릅니다. 실제값: ${actual}`,
-      'warn'
-    );
-  } else if (outcome === '정확') {
-    setStatus(`정답 일치 · 인식 소요 시간 ${elapsed.toFixed(2)}초`, 'ok');
-  } else {
-    setStatus(`바코드 인식 성공 · ${elapsed.toFixed(2)}초`, 'ok');
+  setStatus(
+    '인식 성공! 다음 바코드를 읽으려면 다음 바코드를 누르세요.',
+    'ok'
+  );
+
+  if (navigator.vibrate) {
+    navigator.vibrate(60);
   }
 
-  if (navigator.vibrate) navigator.vibrate(60);
-
-  showSuccessPopup(actual, format, outcome, elapsed);
-
-  log(
-    `시험 결과: 조건=${currentCondition}, 예상=${expected || '(미입력)'}, ` +
-    `실제=${actual}, 결과=${outcome}, 소요=${elapsed.toFixed(2)}초`,
-    outcome === '오인식' ? 'warn' : 'ok'
-  );
-}
-
-/*
- * 바코드가 읽히지 않은 시도를 수동으로 기록합니다.
- * 실패 기록에서는 팝업이 발생하지 않습니다.
- */
-function recordFailure() {
-  if (!running || locked) return;
-
-  locked = true;
-
-  const elapsed = elapsedSeconds();
-
-  records.push({
-    number: records.length + 1,
-    time: timeText(),
-    condition: currentCondition,
-    expected: currentExpected,
-    actualCode: '',
-    outcome: '미인식',
-    seconds: elapsed
-  });
-
-  renderHistory();
-  setButtons();
-
-  setStatus(
-    `미인식 기록 완료 · 조건=${currentCondition} · ${elapsed.toFixed(2)}초`,
-    'warn'
-  );
-
-  log(
-    `미인식 기록: 조건=${currentCondition}, 예상=${currentExpected || '(미입력)'}, ` +
-    `소요=${elapsed.toFixed(2)}초`,
-    'warn'
-  );
+  /* 추가된 부분: 실제 성공 결과가 있을 때만 팝업 표시 */
+  showSuccessPopup(lastCode, format);
 }
 
 async function startCamera() {
@@ -1438,10 +1244,12 @@ async function startCamera() {
 
   if (!window.ZXing || !window.ZXingBrowser) {
     setStatus('ZXing 라이브러리를 로딩하지 못했습니다.', 'err');
+
     log(
       `라이브러리 상태: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`,
       'err'
     );
+
     return;
   }
 
@@ -1449,10 +1257,9 @@ async function startCamera() {
   setButtons();
   setStatus('카메라 시작 중…');
 
-  hideSuccessPopup();
-
   log('===== 카메라 시작 요청 =====');
   log(`브라우저: ${navigator.userAgent}`);
+
   log(
     `라이브러리: ZXing=${!!window.ZXing}, ZXingBrowser=${!!window.ZXingBrowser}`
   );
@@ -1495,6 +1302,7 @@ async function startCamera() {
     log('카메라 스트림 수신 완료', 'ok');
 
     video.srcObject = stream;
+
     log('video.srcObject 설정 완료');
 
     await new Promise((resolve, reject) => {
@@ -1502,6 +1310,7 @@ async function startCamera() {
 
       const cleanup = () => {
         clearTimeout(timer);
+
         video.removeEventListener('loadedmetadata', onReady);
         video.removeEventListener('error', onError);
       };
@@ -1523,27 +1332,30 @@ async function startCamera() {
 
       timer = setTimeout(() => {
         cleanup();
-        reject(new Error('10초 동안 카메라 영상이 준비되지 않았습니다.'));
+
+        reject(
+          new Error('10초 동안 카메라 영상이 준비되지 않았습니다.')
+        );
       }, 10000);
 
       video.addEventListener('loadedmetadata', onReady, { once: true });
       video.addEventListener('error', onError, { once: true });
     });
 
-    log(`영상 메타데이터 수신: ${video.videoWidth}×${video.videoHeight}`, 'ok');
+    log(
+      `영상 메타데이터 수신: ${video.videoWidth}×${video.videoHeight}`,
+      'ok'
+    );
 
     await video.play();
+
     log('video.play() 성공', 'ok');
 
     track = stream.getVideoTracks()[0];
-    initialCameraSettings = track.getSettings
-      ? track.getSettings()
-      : {};
 
     running = true;
     locked = false;
     torchOn = false;
-    lowLightEnabled = false;
     starting = false;
 
     setButtons();
@@ -1553,12 +1365,10 @@ async function startCamera() {
     await populateCameras();
     await tuneCamera();
 
-    beginAttempt();
-    startQualityMonitor();
     startDecoder();
 
     setStatus(
-      '카메라가 켜졌습니다. 가이드 안에 바코드를 맞춰 보세요.',
+      '카메라가 켜졌습니다. 가이드 안에 가로 바코드를 맞춰 보세요.',
       'ok'
     );
 
@@ -1606,6 +1416,7 @@ async function requestFocus() {
       });
 
       log(`초점 모드 요청 적용: ${mode}`, 'ok');
+
       setStatus(`자동초점 ${mode} 모드를 요청했습니다.`, 'ok');
 
       updateInfo();
@@ -1634,14 +1445,12 @@ async function toggleTorch() {
     });
 
     torchOn = !torchOn;
-    torchBtn.textContent = torchOn ? '플래시 끄기' : '플래시 켜기';
+
+    torchBtn.textContent = torchOn
+      ? '플래시 끄기'
+      : '플래시 켜기';
 
     log(`플래시 ${torchOn ? '켜짐' : '꺼짐'}`, 'ok');
-
-    setStatus(
-      `플래시 ${torchOn ? '켜짐' : '꺼짐'}. 화면 밝기 변화를 확인하세요.`,
-      'ok'
-    );
 
   } catch (error) {
     log(
@@ -1650,7 +1459,7 @@ async function toggleTorch() {
     );
 
     setStatus(
-      '이 카메라 또는 브라우저에서는 플래시 제어가 제한될 수 있습니다.',
+      '이 브라우저 또는 카메라에서는 플래시 제어가 제한될 수 있습니다.',
       'warn'
     );
   }
@@ -1697,7 +1506,10 @@ async function setManualFocus() {
       'warn'
     );
 
-    setStatus('이 카메라에서는 수동 초점을 적용할 수 없습니다.', 'warn');
+    setStatus(
+      '이 카메라에서는 수동 초점을 적용할 수 없습니다.',
+      'warn'
+    );
   }
 }
 
@@ -1708,8 +1520,6 @@ async function cleanupCamera() {
     clearTimeout(pendingCameraTimer);
     pendingCameraTimer = null;
   }
-
-  stopQualityMonitor();
 
   try {
     if (scanControls?.stop) {
@@ -1735,21 +1545,14 @@ async function cleanupCamera() {
 
   stream = null;
   track = null;
-
-  try {
-    video.pause();
-    video.srcObject = null;
-  } catch (_) {}
-
+  video.srcObject = null;
   torchOn = false;
-  lowLightEnabled = false;
 
   zoomRow.style.display = 'none';
   focusRow.style.display = 'none';
 
+  /* 카메라를 정지하면 팝업도 숨김 */
   hideSuccessPopup();
-
-  qualityInfo.textContent = '가이드 영역 밝기 측정 대기 중';
 
   return Promise.resolve();
 }
@@ -1761,9 +1564,6 @@ async function stopCamera() {
 
   starting = false;
   setButtons();
-
-  torchBtn.textContent = '플래시 켜기';
-  lowLightBtn.textContent = '저조도 보정 켜기';
 
   setStatus('카메라가 중지되었습니다.');
   cameraInfo.textContent = '카메라가 중지되었습니다.';
@@ -1783,42 +1583,22 @@ async function switchCamera() {
 }
 
 function renderHistory() {
-  count.textContent = records.length + '회';
+  if (count) {
+    count.textContent = records.length + '건';
+  }
 
   csvBtn.disabled = records.length === 0;
   clearBtn.disabled = records.length === 0;
 
-  const decoded = records.filter(r => r.actualCode).length;
-  const expectedRecords = records.filter(r => r.expected);
-  const matches = expectedRecords.filter(
-    r => r.actualCode && r.actualCode === r.expected
-  ).length;
-
-  const successTimes = records
-    .filter(r => r.actualCode)
-    .map(r => r.seconds);
-
-  const average = successTimes.length
-    ? successTimes.reduce((a,b) => a + b, 0) / successTimes.length
-    : null;
-
-  const matchRate = expectedRecords.length
-    ? matches / expectedRecords.length * 100
-    : null;
-
-  testSummary.textContent =
-    `총 시도 ${records.length}회 · 판독 성공 ${decoded}회 · ` +
-    `미인식 ${records.length - decoded}회 · ` +
-    `평균 판독 시간 ${average === null ? '-' : average.toFixed(2) + '초'} · ` +
-    `정답 입력 시 일치율 ${
-      matchRate === null
-        ? '계산 불가(예상 번호 미입력)'
-        : matchRate.toFixed(1) + '% (' + matches + '/' + expectedRecords.length + ')'
-    }`;
+  if (!history) {
+    log('HTML 요소 누락: history', 'err');
+    return;
+  }
 
   if (!records.length) {
     history.innerHTML =
-      '<tr><td colspan="6" class="muted">아직 기록이 없습니다.</td></tr>';
+      '<tr><td colspan="3" class="muted">아직 기록이 없습니다.</td></tr>';
+
     return;
   }
 
@@ -1827,20 +1607,14 @@ function renderHistory() {
   [...records].reverse().forEach(record => {
     const tr = document.createElement('tr');
 
-    const values = [
-      record.number,
-      record.condition,
-      record.seconds.toFixed(2) + '초',
-      record.expected || '-',
-      record.actualCode || '미인식',
-      record.outcome
-    ];
-
-    values.forEach((value, index) => {
+    [record.number, record.time, record.code].forEach((value, index) => {
       const td = document.createElement('td');
+
       td.textContent = String(value);
 
-      if (index === 4) td.className = 'code';
+      if (index === 2) {
+        td.className = 'code';
+      }
 
       tr.appendChild(td);
     });
@@ -1863,6 +1637,7 @@ async function copyResult() {
 
   if (await copyText(lastCode)) {
     setStatus('바코드 값을 복사했습니다.', 'ok');
+
   } else {
     setStatus(
       '복사 권한이 없습니다. 결과를 길게 눌러 복사해 주세요.',
@@ -1877,7 +1652,7 @@ async function copyLogs() {
   ).join('\n');
 
   if (await copyText(text)) {
-    setStatus('진단 로그를 복사했습니다.', 'ok');
+    setStatus('진단 로그를 복사했습니다. 전체 내용을 보내 주세요.', 'ok');
     return;
   }
 
@@ -1898,25 +1673,24 @@ async function copyLogs() {
 
   URL.revokeObjectURL(url);
 
-  setStatus('클립보드 복사가 제한되어 로그 파일을 저장했습니다.', 'warn');
+  setStatus(
+    '클립보드 복사가 제한되어 로그 파일을 저장했습니다.',
+    'warn'
+  );
 }
 
 function saveCsv() {
   if (!records.length) return;
 
   const escapeCsv = value =>
-    '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    '"' + String(value).replace(/"/g, '""') + '"';
 
   const rows = [
-    ['번호','시간','시험 조건','예상값','실제값','결과','인식 소요시간(초)'],
+    ['번호', '인식 시간', '바코드 값'],
     ...records.map(record => [
       record.number,
       record.time,
-      record.condition,
-      record.expected,
-      record.actualCode,
-      record.outcome,
-      record.seconds.toFixed(2)
+      record.code
     ])
   ];
 
@@ -1932,7 +1706,7 @@ function saveCsv() {
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = 'barcode-scan-test-v74.csv';
+  link.download = 'barcode-test.csv';
 
   document.body.appendChild(link);
   link.click();
@@ -1941,12 +1715,12 @@ function saveCsv() {
   URL.revokeObjectURL(url);
 }
 
+/* 기존 v7.3 이벤트 */
 cameraSelect.addEventListener('change', switchCamera);
 startBtn.addEventListener('click', startCamera);
 stopBtn.addEventListener('click', stopCamera);
 focusBtn.addEventListener('click', requestFocus);
 torchBtn.addEventListener('click', toggleTorch);
-lowLightBtn.addEventListener('click', toggleLowLight);
 
 zoom.addEventListener('input', setZoom);
 focusDistance.addEventListener('input', setManualFocus);
@@ -1954,44 +1728,47 @@ focusDistance.addEventListener('input', setManualFocus);
 copyBtn.addEventListener('click', copyResult);
 csvBtn.addEventListener('click', saveCsv);
 copyLogBtn.addEventListener('click', copyLogs);
-failBtn.addEventListener('click', recordFailure);
 
-/*
- * 다음 시도:
- * 현재 결과를 기록한 뒤 타이머와 시험 조건을 새로 시작합니다.
- */
+/* 기존 다음 바코드 처리 유지 */
 nextBtn.addEventListener('click', () => {
-  hideSuccessPopup();
-
   locked = false;
-  beginAttempt();
+
   setButtons();
 
   setStatus('다음 바코드를 가이드 안에 맞춰 보세요.');
 
-  log('다음 시험 시도 대기');
+  log('다음 바코드 대기');
 });
 
+/* 팝업의 다음 바코드 버튼은 기존 다음 버튼을 재사용 */
 popupNextBtn.addEventListener('click', () => {
   hideSuccessPopup();
   nextBtn.click();
 });
 
-/* 닫기 버튼은 팝업만 닫습니다. 스캐너는 다음 시도 버튼을 눌러야 재개됩니다. */
-popupCloseBtn.addEventListener('click', hideSuccessPopup);
+/*
+ * 닫기는 팝업만 닫습니다.
+ * 다음 바코드를 읽으려면 원래의 '다음 바코드' 버튼을 누릅니다.
+ */
+popupCloseBtn.addEventListener('click', () => {
+  hideSuccessPopup();
+});
 
 clearBtn.addEventListener('click', () => {
-  if (confirm('시험 기록을 모두 지울까요?')) {
+  if (confirm('인식 기록을 모두 지울까요?')) {
     records = [];
+
     renderHistory();
-    log('시험 기록 초기화');
+    log('인식 기록 초기화');
   }
 });
 
 clearLogBtn.addEventListener('click', () => {
   logs = [];
   logBox.replaceChildren();
+
   logCount.textContent = '0줄';
+
   log('로그 초기화');
 });
 
@@ -2021,12 +1798,18 @@ window.addEventListener('unhandledrejection', event => {
 
 window.addEventListener('pagehide', () => {
   try {
-    if (scanControls?.stop) scanControls.stop();
-    if (reader?.reset) reader.reset();
+    if (scanControls?.stop) {
+      scanControls.stop();
+    }
+
+    if (reader?.reset) {
+      reader.reset();
+    }
   } catch (_) {}
 
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  stopQualityMonitor();
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+  }
 });
 
 setButtons();
